@@ -510,6 +510,10 @@ class ProcoreApiDocToOpenApiTransformer {
     for (const [i, response] of Object.entries(responses)) {
       const { status } = response;
 
+      if (typeof status !== 'string' || !/^[2-5][0-9][0-9]$/.test(status)) {
+        warn('Invalid status:', status);
+      }
+
       if (hasOwnProperty.call(responseByStatus, status)) {
         throw new Error(`Multiple responses for status ${status}`);
       }
