@@ -173,6 +173,7 @@ class ProcoreApiDocToOpenApiTransformer {
    * Objects.
    *
    * @param {!Array<!object>} params path_params or query_params array.
+   * @param {string} paramsIn in property of the returned Parameter Objects.
    * @returns {!Array<!object>} Array of OpenAPI Parameter Objects.
    */
   transformParams(params, paramsIn) {
@@ -224,6 +225,24 @@ class ProcoreApiDocToOpenApiTransformer {
     }
 
     return oasParams;
+  }
+
+  /** Transforms path_params array to an array of OpenAPI Parameter Objects.
+   *
+   * @param {!Array<!object>} pathParams path_params array.
+   * @returns {!Array<!object>} Array of OpenAPI Parameter Objects.
+   */
+  transformPathParams(pathParams) {
+    return this.transformParams(pathParams, 'path');
+  }
+
+  /** Transforms query_params array to an array of OpenAPI Parameter Objects.
+   *
+   * @param {!Array<!object>} queryParams query_params array.
+   * @returns {!Array<!object>} Array of OpenAPI Parameter Objects.
+   */
+  transformQueryParams(queryParams) {
+    return this.transformParams(queryParams, 'query');
   }
 
   /** Transforms body_params to JSON Schema.
@@ -461,8 +480,8 @@ class ProcoreApiDocToOpenApiTransformer {
     }
 
     const parameters = [
-      ...this.transformParams(pathParams, 'path'),
-      ...this.transformParams(queryParams, 'query'),
+      ...this.transformPathParams(pathParams),
+      ...this.transformQueryParams(queryParams),
     ];
 
     let combinedSummary = '';
