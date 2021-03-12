@@ -594,20 +594,20 @@ class ProcoreApiDocToOpenApiTransformer {
   transformEndpoints(endpoints) {
     const paths = Object.create(null);
     for (const endpoint of endpoints) {
-      if (this.options.endpointFilter
-        && !this.options.endpointFilter(endpoint)) {
-        continue; // eslint-disable-line no-continue
-      }
+      if (!this.options.endpointFilter
+        || this.options.endpointFilter(endpoint)) {
+        const { path, method, operation } = this.transformEndpoint(endpoint);
 
-      const { path, method, operation } = this.transformEndpoint(endpoint);
-
-      const pathItem = paths[path];
-      if (!pathItem) {
-        paths[path] = { [method]: operation };
-      } else if (!pathItem[method]) {
-        pathItem[method] = operation;
-      } else {
-        throw new Error(`Method ${method} appears multiple times for ${path}`);
+        const pathItem = paths[path];
+        if (!pathItem) {
+          paths[path] = { [method]: operation };
+        } else if (!pathItem[method]) {
+          pathItem[method] = operation;
+        } else {
+          throw new Error(
+            `Method ${method} appears multiple times for ${path}`,
+          );
+        }
       }
     }
 
