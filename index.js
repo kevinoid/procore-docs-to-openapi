@@ -147,6 +147,12 @@ class ProcoreApiDocToOpenApiTransformer {
     return schema;
   }
 
+  /** Transforms a path_params or query_params object to an OpenAPI Parameter
+   * Object.
+   *
+   * @param {!object} param Item from path_params or query_params array.
+   * @returns {!object} OpenAPI Parameter Object.
+   */
   transformParam(param) {
     const {
       description,
@@ -162,6 +168,12 @@ class ProcoreApiDocToOpenApiTransformer {
     return this.tuneSchema(name, schema);
   }
 
+  /** Transforms path_params or query_params to an array of OpenAPI Parameter
+   * Objects.
+   *
+   * @param {!Array<!object>} params path_params or query_params array.
+   * @returns {!Array<!object>} Array of OpenAPI Parameter Objects.
+   */
   transformParams(params, paramsIn) {
     const oasParams = [];
     let prevSchema;
@@ -213,6 +225,11 @@ class ProcoreApiDocToOpenApiTransformer {
     return oasParams;
   }
 
+  /** Transforms body_params to JSON Schema.
+   *
+   * @param {!Array<!object>} params body_params array.
+   * @returns {!object} JSON Schema.
+   */
   transformBodyParams(params) {
     // The Procore docs represent schema hierarchy for body using indentation.
     // Keep track of most recent schema for each indent depth, so child schema
@@ -319,6 +336,11 @@ class ProcoreApiDocToOpenApiTransformer {
     return schemaForDepth[0];
   }
 
+  /** Transforms schema properties to JSON Schema properties.
+   *
+   * @param {!Array<!object>} properties schema properties array.
+   * @returns {!object} JSON Schema properties.
+   */
   transformSchemaProperties(properties) {
     const propertiesByName = Object.create(null);
     for (const { field, ...property } of properties) {
@@ -328,6 +350,12 @@ class ProcoreApiDocToOpenApiTransformer {
     return propertiesByName;
   }
 
+  /** Transforms a schema to a JSON Schema.
+   *
+   * @param {!object} schema schema object.
+   * @param {?string=} name Property name of schema, if any.
+   * @returns {!object} JSON Schema.
+   */
   transformSchema(schema, name) {
     if (schema.field) {
       throw new Error('field on top-level schema');
@@ -359,6 +387,11 @@ class ProcoreApiDocToOpenApiTransformer {
     return this.tuneSchema(name, newSchema);
   }
 
+  /** Transforms a responses array to an OpenAPI Responses Object.
+   *
+   * @param {!Array<!object>} responses responses array.
+   * @returns {!object} OpenAPI Responses Object.
+   */
   transformResponses(responses) {
     const responseByStatus = {};
     for (const response of responses) {
@@ -390,6 +423,16 @@ class ProcoreApiDocToOpenApiTransformer {
     return responseByStatus;
   }
 
+  /** Transforms an endpoint object to a path, method name, and OpenAPI
+   * Operation Object.
+   *
+   * @param {!object} endpoint endpoint object.
+   * @returns {!{
+   *   path: string,
+   *   method: string,
+   *   operation: !object
+   * }} Path, method name, and OpenAPI Operation Object.
+   */
   transformEndpoint(endpoint) {
     const {
       base_path: basePath,
@@ -511,6 +554,11 @@ class ProcoreApiDocToOpenApiTransformer {
     };
   }
 
+  /** Transforms a version object to an OpenAPI document.
+   *
+   * @param {!object} version version object.
+   * @returns {!object} OpenAPI document.
+   */
   transformVersion(version) {
     const {
       api_version: apiVersion,
@@ -588,6 +636,11 @@ class ProcoreApiDocToOpenApiTransformer {
     };
   }
 
+  /** Transforms a versions array to an OpenAPI document.
+   *
+   * @param {!Array<!object>} versions versions array.
+   * @returns {!object} OpenAPI document.
+   */
   transformVersions(versions) {
     if (!Array.isArray(versions)) {
       throw new TypeError('versions must be an Array');
@@ -600,6 +653,11 @@ class ProcoreApiDocToOpenApiTransformer {
     return this.transformVersion(versions[versions.length - 1]);
   }
 
+  /** Transforms the root object to an OpenAPI document.
+   *
+   * @param {!object} doc Procore REST API document root object.
+   * @returns {!object} OpenAPI document.
+   */
   transformApiDoc(doc) {
     if (!doc || typeof doc !== 'object') {
       throw new TypeError('doc must be an object');
