@@ -141,9 +141,12 @@ function toJsonPointer(propPath) {
 
 function visit(transformer, method, propName, propValue) {
   transformer.transformPath.push(propName);
+
+  let handlingException = false;
   try {
     return method.call(transformer, propValue);
   } catch (err) {
+    handlingException = true;
     if (!hasOwnProperty.call(err, 'transformPath')) {
       err.transformPath = transformer.transformPath.slice(0);
       err.message +=
@@ -153,7 +156,11 @@ function visit(transformer, method, propName, propValue) {
     throw err;
   } finally {
     const popProp = transformer.transformPath.pop();
-    assert.strictEqual(popProp, propName);
+
+    // Avoid clobbering an exception which is already propagating
+    if (!handlingException) {
+      assert.strictEqual(popProp, propName);
+    }
   }
 }
 
