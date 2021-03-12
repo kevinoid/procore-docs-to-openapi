@@ -364,6 +364,18 @@ class ProcoreApiDocToOpenApiTransformer {
   transformSchemaProperties(properties) {
     const propertiesByName = Object.create(null);
     for (const { field, ...property } of properties) {
+      if (!field || typeof field !== 'string') {
+        throw new Error(
+          `Invalid field '${field}' in schema properties`,
+        );
+      }
+
+      if (hasOwnProperty.call(propertiesByName, field)) {
+        throw new Error(
+          `Duplicate field '${field}' in schema properties`,
+        );
+      }
+
       propertiesByName[field] = this.transformSchema(property, field);
     }
 
