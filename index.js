@@ -47,17 +47,6 @@ class ProcoreApiDocToOpenApiTransformer {
     this.options = options;
   }
 
-  checkEnum(enumValues) {
-    if (enumValues !== undefined
-      && enumValues !== null
-      && !Array.isArray(enumValues)) {
-      warn('Unexpected non-Array enum value:', enumValues);
-    }
-
-    // Procore docs add enum: [] to non-enumerated parameters.
-    return enumValues && enumValues.length > 0 ? enumValues : undefined;
-  }
-
   tuneSchema(name, schema) {
     name = name || '';
     let description = schema.description || '';
@@ -160,10 +149,22 @@ class ProcoreApiDocToOpenApiTransformer {
       name,
       type,
     } = param;
+
+    // Procore docs add enum: [] to non-enumerated parameters.
+    // Sanity check enumValues before use.
+    let checkedEnum;
+    if (enumValues !== undefined && enumValues !== null) {
+      if (!Array.isArray(enumValues)) {
+        warn('Unexpected non-Array enum:', enumValues);
+      } else if (enumValues.length > 0) {
+        checkedEnum = enumValues;
+      }
+    }
+
     const schema = {
       description: description || undefined,
       type,
-      enum: this.checkEnum(enumValues),
+      enum: checkedEnum,
     };
     return this.tuneSchema(name, schema);
   }
