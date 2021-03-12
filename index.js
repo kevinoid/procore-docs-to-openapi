@@ -363,7 +363,8 @@ class ProcoreApiDocToOpenApiTransformer {
    */
   transformSchemaProperties(properties) {
     const propertiesByName = Object.create(null);
-    for (const { field, ...property } of properties) {
+    for (const property of properties) {
+      const { field } = property;
       if (!field || typeof field !== 'string') {
         throw new Error(
           `Invalid field '${field}' in schema properties`,
@@ -376,7 +377,7 @@ class ProcoreApiDocToOpenApiTransformer {
         );
       }
 
-      propertiesByName[field] = this.transformSchema(property, field);
+      propertiesByName[field] = this.transformSchema(property);
     }
 
     return propertiesByName;
@@ -385,14 +386,9 @@ class ProcoreApiDocToOpenApiTransformer {
   /** Transforms a schema to a JSON Schema.
    *
    * @param {!object} schema schema object.
-   * @param {?string=} name Property name of schema, if any.
    * @returns {!object} JSON Schema.
    */
-  transformSchema(schema, name) {
-    if (schema.field) {
-      throw new Error('field on top-level schema');
-    }
-
+  transformSchema(schema) {
     let newSchema;
     switch (schema.type) {
       case 'array':
@@ -416,7 +412,7 @@ class ProcoreApiDocToOpenApiTransformer {
         break;
     }
 
-    return tuneSchema(this, name, newSchema);
+    return tuneSchema(this, schema.field, newSchema);
   }
 
   /** Transforms a responses array to an OpenAPI Responses Object.
@@ -440,6 +436,10 @@ class ProcoreApiDocToOpenApiTransformer {
 
       if (responseByStatus[status]) {
         throw new Error(`Multiple responses for status ${status}`);
+      }
+
+      if (schema.field) {
+        throw new Error('field on top-level schema');
       }
 
       responseByStatus[status] = {
