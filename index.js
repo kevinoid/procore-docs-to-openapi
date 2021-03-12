@@ -126,10 +126,31 @@ function tuneSchema(transformer, name, schema) {
   return schema;
 }
 
+/** Convert an Array of property names to a JSON Pointer (RFC 6901).
+ *
+ * @private
+ * @param {!Array<string>} propPath Property names.
+ * @returns {string} JSON Pointer.
+ */
+function toJsonPointer(propPath) {
+  // eslint-disable-next-line prefer-template
+  return '/' + propPath
+    .map((p) => p.replace(/~/g, '~0').replace(/\//g, '~1'))
+    .join('/');
+}
+
 function visit(transformer, method, propName, propValue) {
   transformer.transformPath.push(propName);
   try {
     return method.call(transformer, propValue);
+  } catch (err) {
+    if (!hasOwnProperty.call(err, 'transformPath')) {
+      err.transformPath = transformer.transformPath.slice(0);
+      err.message +=
+        ` (while transforming ${toJsonPointer(err.transformPath)})`;
+    }
+
+    throw err;
   } finally {
     const popProp = transformer.transformPath.pop();
     assert.strictEqual(popProp, propName);
