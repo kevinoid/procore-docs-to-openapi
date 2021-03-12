@@ -438,12 +438,19 @@ class ProcoreApiDocToOpenApiTransformer {
    * @returns {!object} JSON Schema.
    */
   transformSchema(schema) {
+    const {
+      field,
+      items,
+      properties,
+      type,
+    } = schema;
+
     let newSchema;
-    switch (schema.type) {
+    switch (type) {
       case 'array':
         newSchema = {
           ...schema,
-          items: visit(this, this.transformSchema, 'items', schema.items),
+          items: visit(this, this.transformSchema, 'items', items),
         };
         break;
 
@@ -454,7 +461,7 @@ class ProcoreApiDocToOpenApiTransformer {
             this,
             this.transformSchemaProperties,
             'properties',
-            schema.properties,
+            properties,
           ),
         };
         break;
@@ -466,7 +473,7 @@ class ProcoreApiDocToOpenApiTransformer {
         break;
     }
 
-    return tuneSchema(this, schema.field, newSchema);
+    return tuneSchema(this, field, newSchema);
   }
 
   /** Transforms a response object to an OpenAPI Response Object.
