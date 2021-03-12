@@ -126,6 +126,16 @@ function tuneSchema(transformer, name, schema) {
   return schema;
 }
 
+function visit(transformer, method, propName, propValue) {
+  transformer.transformPath.push(propName);
+  try {
+    return method.call(transformer, propValue);
+  } finally {
+    const popProp = transformer.transformPath.pop();
+    assert.strictEqual(popProp, propName);
+  }
+}
+
 exports.ProcoreApiDocToOpenApiTransformer =
 class ProcoreApiDocToOpenApiTransformer {
   constructor(options = {}) {
@@ -134,6 +144,12 @@ class ProcoreApiDocToOpenApiTransformer {
     }
 
     this.options = options;
+
+    /** Property names traversed in current transformation.
+     *
+     * @type {Array<string>}
+     */
+    this.transformPath = [];
   }
 
   /** Transforms a path_params or query_params object to an OpenAPI Parameter
@@ -179,7 +195,7 @@ class ProcoreApiDocToOpenApiTransformer {
   transformParams(params, paramsIn) {
     const oasParams = [];
     let prevSchema;
-    for (const param of params) {
+    for (const [i, param] of Object.entries(params)) {
       const {
         description,
         enum: enumValues,
@@ -203,7 +219,7 @@ class ProcoreApiDocToOpenApiTransformer {
         throw new Error('Unsupported parameter with type object');
       }
 
-      const schema = this.transformParam(param);
+      const schema = visit(this, this.transformParam, i, param);
       if (prevSchema && prevSchema.type === 'array') {
         if (prevSchema.items) {
           throw new Error(`${name} conflicts with existing array item schema`);
@@ -255,7 +271,7 @@ class ProcoreApiDocToOpenApiTransformer {
     // Keep track of most recent schema for each indent depth, so child schema
     // can be matched to parent.
     const schemaForDepth = [{ type: 'object' }];
-    for (const param of params) {
+    for (const [i, param] of Object.entries(params)) {
       const {
         description,
         direct_child_of_object: directChildOfObject,
@@ -290,7 +306,7 @@ class ProcoreApiDocToOpenApiTransformer {
         );
       }
 
-      const schema = this.transformParam(param);
+      const schema = visit(this, this.transformParam, i, param);
       const parentType = parentSchema.type;
       if (parentType === 'object') {
         if (!name) {
@@ -363,7 +379,7 @@ class ProcoreApiDocToOpenApiTransformer {
    */
   transformSchemaProperties(properties) {
     const propertiesByName = Object.create(null);
-    for (const property of properties) {
+    for (const [i, property] of Object.entries(properties)) {
       const { field } = property;
       if (!field || typeof field !== 'string') {
         throw new Error(
@@ -377,7 +393,12 @@ class ProcoreApiDocToOpenApiTransformer {
         );
       }
 
-      propertiesByName[field] = this.transformSchema(property);
+      propertiesByName[field] = visit(
+        this,
+        this.transformSchema,
+        i,
+        property,
+      );
     }
 
     return propertiesByName;
@@ -394,14 +415,19 @@ class ProcoreApiDocToOpenApiTransformer {
       case 'array':
         newSchema = {
           ...schema,
-          items: this.transformSchema(schema.items),
+          items: visit(this, this.transformSchema, 'items', schema.items),
         };
         break;
 
       case 'object':
         newSchema = {
           ...schema,
-          properties: this.transformSchemaProperties(schema.properties),
+          properties: visit(
+            this,
+            this.transformSchemaProperties,
+            'properties',
+            schema.properties,
+          ),
         };
         break;
 
@@ -440,7 +466,7 @@ class ProcoreApiDocToOpenApiTransformer {
       description: description || undefined,
       content: {
         'application/json': {
-          schema: this.transformSchema(schema),
+          schema: visit(this, this.transformSchema, 'schema', schema),
         },
       },
     };
@@ -453,14 +479,15 @@ class ProcoreApiDocToOpenApiTransformer {
    */
   transformResponses(responses) {
     const responseByStatus = {};
-    for (const response of responses) {
+    for (const [i, response] of Object.entries(responses)) {
       const { status } = response;
 
       if (responseByStatus[status]) {
         throw new Error(`Multiple responses for status ${status}`);
       }
 
-      responseByStatus[status] = this.transformResponse(response);
+      responseByStatus[status] =
+        visit(this, this.transformResponse, i, response);
     }
 
     return responseByStatus;
@@ -503,8 +530,8 @@ class ProcoreApiDocToOpenApiTransformer {
     }
 
     const parameters = [
-      ...this.transformPathParams(pathParams),
-      ...this.transformQueryParams(queryParams),
+      ...visit(this, this.transformPathParams, 'path_params', pathParams),
+      ...visit(this, this.transformQueryParams, 'query_params', queryParams),
     ];
 
     let combinedSummary = '';
@@ -587,12 +614,17 @@ class ProcoreApiDocToOpenApiTransformer {
           required: true,
           content: {
             'application/json': {
-              schema: this.transformBodyParams(bodyParams),
+              schema: visit(
+                this,
+                this.transformBodyParams,
+                'body_params',
+                bodyParams,
+              ),
               example: example || undefined,
             },
           },
         },
-        responses: this.transformResponses(responses),
+        responses: visit(this, this.transformResponses, 'responses', responses),
       },
     };
   }
@@ -604,10 +636,11 @@ class ProcoreApiDocToOpenApiTransformer {
    */
   transformEndpoints(endpoints) {
     const paths = Object.create(null);
-    for (const endpoint of endpoints) {
+    for (const [i, endpoint] of Object.entries(endpoints)) {
       if (!this.options.endpointFilter
         || this.options.endpointFilter(endpoint)) {
-        const { path, method, operation } = this.transformEndpoint(endpoint);
+        const { path, method, operation } =
+          visit(this, this.transformEndpoint, i, endpoint);
 
         const pathItem = paths[path];
         if (!pathItem) {
@@ -660,7 +693,7 @@ class ProcoreApiDocToOpenApiTransformer {
       warn('Unexpected resource_version:', resourceVersion);
     }
 
-    const paths = this.transformEndpoints(endpoints);
+    const paths = visit(this, this.transformEndpoints, 'endpoints', endpoints);
     const tagDocsUrl = `https://developers.procore.com/reference/rest/v1/${
       groupNameToUrlPath(name)}`;
     const opTags = [name];
@@ -707,7 +740,8 @@ class ProcoreApiDocToOpenApiTransformer {
       warn('Found %d versions.  Ignoring all but the last.', versions.length);
     }
 
-    return this.transformVersion(versions[versions.length - 1]);
+    const last = versions.length - 1;
+    return visit(this, this.transformVersion, String(last), versions[last]);
   }
 
   /** Transforms the root object to an OpenAPI document.
@@ -734,7 +768,7 @@ class ProcoreApiDocToOpenApiTransformer {
       warn('Unrecognized properties on doc:', unrecognizedProps);
     }
 
-    return this.transformVersions(versions);
+    return visit(this, this.transformVersions, 'versions', versions);
   }
 };
 
