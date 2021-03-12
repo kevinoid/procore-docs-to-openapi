@@ -5,12 +5,12 @@
 
 'use strict';
 
-const modulename = require('..');
+const procoreDocsToOpenapi = require('..');
 
-describe('modulename', () => {
+describe('procoreDocsToOpenapi', () => {
   it('does something', (done) => {
-    // Assert something about modulename here
-    modulename.func();
+    // Assert something about procoreDocsToOpenapi here
+    procoreDocsToOpenapi.func();
     done();
   });
 });

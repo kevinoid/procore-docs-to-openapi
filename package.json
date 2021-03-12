@@ -1,18 +1,19 @@
 {
-  "name": "@kevinoid/project-template",
+  "name": "@kevinoid/procore-docs-to-openapi",
   "version": "0.0.1",
-  "description": "A Node.js/npm project template with codecov, coveralls, ESLint, conventional-changelog, nyc, JSDoc, and mocha.",
+  "description": "Convert Procore REST API documentation JSON files to OpenAPI.",
   "keywords": [
-    "project-template",
-    "template"
+    "openapi",
+    "procore",
+    "swagger"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/kevinoid/node-project-template",
-  "bugs": "https://github.com/kevinoid/node-project-template/issues",
+  "homepage": "https://github.com/kevinoid/procore-docs-to-openapi",
+  "bugs": "https://github.com/kevinoid/procore-docs-to-openapi/issues",
   "author": "Kevin Locke <kevin@kevinlocke.name>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kevinoid/node-project-template.git"
+    "url": "https://github.com/kevinoid/procore-docs-to-openapi.git"
   },
   "type": "commonjs",
   "files": [
@@ -26,7 +27,7 @@
     ".": "./index.js"
   },
   "bin": {
-    "project-template": "bin/cmd.js"
+    "procore-docs-to-openapi": "bin/procore-docs-to-openapi.js"
   },
   "//": "All scripts should run in POSIX sh and Windows cmd.exe",
   "scripts": {
@@ -52,6 +53,7 @@
     "version-deps": "npm install conventional-changelog-cli david depcheck git-branch-is hub-ci-status"
   },
   "dependencies": {
+    "camelcase": "^5.3.1",
     "yargs": "^16.0.3"
   },
   "devDependencies": {

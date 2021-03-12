@@ -1,17 +1,31 @@
 #!/usr/bin/env node
 /**
- * An executable command which will be added to $PATH.
+ * Executable to convert Procore API docs JSON files to OpenAPI.
  *
- * @copyright Copyright 2017-2020 Kevin Locke <kevin@kevinlocke.name>
+ * @copyright Copyright 2017-2021 Kevin Locke <kevin@kevinlocke.name>
  * @license MIT
- * @module modulename/bin/cmd
+ * @module procore-docs-to-openapi/bin/procore-docs-to-openapi
  */
 
 'use strict';
 
+const { readFile } = require('fs');
+const { promisify } = require('util');
 const Yargs = require('yargs/yargs');
+
 const packageJson = require('../package.json');
-const modulename = require('..');
+const { docsToOpenapi } = require('..');
+
+// Note: fs.promises.readFile only accepts FileHandle, not number FD
+const readFileP = promisify(readFile);
+
+async function readJson(filename) {
+  const jsonData = await readFileP(
+    filename === '-' ? 0 : filename,
+    { encoding: 'utf8' },
+  );
+  return JSON.parse(jsonData);
+}
 
 /** Options for command entry points.
  *
@@ -36,7 +50,7 @@ const modulename = require('..');
  * @param {!CommandOptions} options Options.
  * @param {function(number)} callback Callback with exit code.
  */
-function modulenameCmd(args, options, callback) {
+function procoreDocsToOpenapiCmd(args, options, callback) {
   if (typeof callback !== 'function') {
     throw new TypeError('callback must be a function');
   }
@@ -79,7 +93,7 @@ function modulenameCmd(args, options, callback) {
       'strip-aliased': true,
       'strip-dashed': true,
     })
-    .usage('Usage: $0 [options] [args...]')
+    .usage('Usage: $0 [options] [JSON files...]')
     .help()
     .alias('help', 'h')
     .alias('help', '?')
@@ -112,23 +126,33 @@ function modulenameCmd(args, options, callback) {
       return;
     }
 
-    if (argOpts._.length !== 1) {
-      options.stderr.write('Error: Exactly one argument is required.\n');
-      callback(1);
-      return;
+    const filenames = argOpts._;
+    if (filenames.length === 0) {
+      if (options.stdin.isTTY) {
+        options.stderr.write(
+          'Warning: No filename given.  Reading Procore API JSON from stdin.\n',
+        );
+      }
+
+      filenames.push('-');
     }
 
     // Parse arguments then call API function with parsed options
     const cmdOpts = {
-      files: argOpts._,
       verbosity: argOpts.verbose - argOpts.quiet,
     };
+
     // eslint-disable-next-line promise/catch-or-return
-    modulename.func(cmdOpts)
+    Promise.all(filenames.map(readJson))
+      .then((docs) => options.stdout.write(JSON.stringify(
+        docsToOpenapi(docs, cmdOpts),
+        undefined,
+        2,
+      )))
       .then(
         () => 0,
         (err) => {
-          options.stderr.write(`${err}\n`);
+          options.stderr.write(`${err.stack}\n`);
           return 1;
         },
       )
@@ -137,13 +161,13 @@ function modulenameCmd(args, options, callback) {
   });
 }
 
-modulenameCmd.default = modulenameCmd;
-module.exports = modulenameCmd;
+procoreDocsToOpenapiCmd.default = procoreDocsToOpenapiCmd;
+module.exports = procoreDocsToOpenapiCmd;
 
 if (require.main === module) {
   // This file was invoked directly.
   // Note:  Could pass process.exit as callback to force immediate exit.
-  modulenameCmd(process.argv, process, (exitCode) => {
+  procoreDocsToOpenapiCmd(process.argv, process, (exitCode) => {
     process.exitCode = exitCode;
   });
 }
