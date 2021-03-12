@@ -586,6 +586,34 @@ class ProcoreApiDocToOpenApiTransformer {
     };
   }
 
+  /** Transforms an endpoints array to an OpenAPI Paths Object.
+   *
+   * @param {!Array<!object>} endpoints endpoints array.
+   * @returns {!object} OpenAPI Paths Object.
+   */
+  transformEndpoints(endpoints) {
+    const paths = Object.create(null);
+    for (const endpoint of endpoints) {
+      if (this.options.endpointFilter
+        && !this.options.endpointFilter(endpoint)) {
+        continue; // eslint-disable-line no-continue
+      }
+
+      const { path, method, operation } = this.transformEndpoint(endpoint);
+
+      const pathItem = paths[path];
+      if (!pathItem) {
+        paths[path] = { [method]: operation };
+      } else if (!pathItem[method]) {
+        pathItem[method] = operation;
+      } else {
+        throw new Error(`Method ${method} appears multiple times for ${path}`);
+      }
+    }
+
+    return paths;
+  }
+
   /** Transforms a version object to an OpenAPI document.
    *
    * @param {!object} version version object.
@@ -621,36 +649,22 @@ class ProcoreApiDocToOpenApiTransformer {
       warn('Unexpected resource_version:', resourceVersion);
     }
 
+    const paths = this.transformEndpoints(endpoints);
     const tagDocsUrl = `https://developers.procore.com/reference/rest/v1/${
       groupNameToUrlPath(name)}`;
-
     const opTags = [name];
-    const paths = Object.create(null);
-    for (const endpoint of endpoints) {
-      if (this.options.endpointFilter
-        && !this.options.endpointFilter(endpoint)) {
-        continue; // eslint-disable-line no-continue
-      }
 
-      const { path, method, operation } = this.transformEndpoint(endpoint);
-
-      if (operation.tags === undefined) {
-        operation.tags = opTags;
-      } else {
-        assert.deepStrictEqual(
-          operation.tags,
-          opTags,
-          'endpoint.group matches version.name',
-        );
-      }
-
-      const pathItem = paths[path];
-      if (!pathItem) {
-        paths[path] = { [method]: operation };
-      } else if (!pathItem[method]) {
-        pathItem[method] = operation;
-      } else {
-        throw new Error(`Method ${method} appears multiple times for ${path}`);
+    for (const pathItem of Object.values(paths)) {
+      for (const operation of Object.values(pathItem)) {
+        if (operation.tags === undefined) {
+          operation.tags = opTags;
+        } else {
+          assert.deepStrictEqual(
+            operation.tags,
+            opTags,
+            'endpoint.group matches version.name',
+          );
+        }
       }
     }
 
