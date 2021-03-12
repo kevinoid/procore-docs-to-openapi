@@ -147,7 +147,7 @@ class ProcoreApiDocToOpenApiTransformer {
     return schema;
   }
 
-  paramToSchema(param) {
+  transformParam(param) {
     const {
       description,
       enum: enumValues,
@@ -162,7 +162,7 @@ class ProcoreApiDocToOpenApiTransformer {
     return this.tuneSchema(name, schema);
   }
 
-  paramsToParams(params, paramsIn) {
+  transformParams(params, paramsIn) {
     const oasParams = [];
     let prevSchema;
     for (const param of params) {
@@ -189,7 +189,7 @@ class ProcoreApiDocToOpenApiTransformer {
         throw new Error('Unsupported parameter with type object');
       }
 
-      const schema = this.paramToSchema(param);
+      const schema = this.transformParam(param);
       if (prevSchema && prevSchema.type === 'array') {
         if (prevSchema.items) {
           throw new Error(`${name} conflicts with existing array item schema`);
@@ -213,7 +213,7 @@ class ProcoreApiDocToOpenApiTransformer {
     return oasParams;
   }
 
-  bodyParamsToSchema(params) {
+  transformBodyParams(params) {
     // The Procore docs represent schema hierarchy for body using indentation.
     // Keep track of most recent schema for each indent depth, so child schema
     // can be matched to parent.
@@ -253,7 +253,7 @@ class ProcoreApiDocToOpenApiTransformer {
         );
       }
 
-      const schema = this.paramToSchema(param);
+      const schema = this.transformParam(param);
       const parentType = parentSchema.type;
       if (parentType === 'object') {
         if (!name) {
@@ -319,16 +319,16 @@ class ProcoreApiDocToOpenApiTransformer {
     return schemaForDepth[0];
   }
 
-  schemaPropertiesToProperties(properties) {
+  transformSchemaProperties(properties) {
     const propertiesByName = Object.create(null);
     for (const { field, ...property } of properties) {
-      propertiesByName[field] = this.responseSchemaToSchema(property, field);
+      propertiesByName[field] = this.transformSchema(property, field);
     }
 
     return propertiesByName;
   }
 
-  responseSchemaToSchema(schema, name) {
+  transformSchema(schema, name) {
     if (schema.field) {
       throw new Error('field on top-level schema');
     }
@@ -338,14 +338,14 @@ class ProcoreApiDocToOpenApiTransformer {
       case 'array':
         newSchema = {
           ...schema,
-          items: this.responseSchemaToSchema(schema.items),
+          items: this.transformSchema(schema.items),
         };
         break;
 
       case 'object':
         newSchema = {
           ...schema,
-          properties: this.schemaPropertiesToProperties(schema.properties),
+          properties: this.transformSchemaProperties(schema.properties),
         };
         break;
 
@@ -359,7 +359,7 @@ class ProcoreApiDocToOpenApiTransformer {
     return this.tuneSchema(name, newSchema);
   }
 
-  responsesToResponses(responses) {
+  transformResponses(responses) {
     const responseByStatus = {};
     for (const response of responses) {
       const {
@@ -381,7 +381,7 @@ class ProcoreApiDocToOpenApiTransformer {
         description: description || undefined,
         content: {
           'application/json': {
-            schema: this.responseSchemaToSchema(schema),
+            schema: this.transformSchema(schema),
           },
         },
       };
@@ -390,7 +390,7 @@ class ProcoreApiDocToOpenApiTransformer {
     return responseByStatus;
   }
 
-  endpointToOperation(endpoint) {
+  transformEndpoint(endpoint) {
     const {
       base_path: basePath,
       beta_programs: betaPrograms,
@@ -417,8 +417,8 @@ class ProcoreApiDocToOpenApiTransformer {
     }
 
     const parameters = [
-      ...this.paramsToParams(pathParams, 'path'),
-      ...this.paramsToParams(queryParams, 'query'),
+      ...this.transformParams(pathParams, 'path'),
+      ...this.transformParams(queryParams, 'query'),
     ];
 
     let combinedSummary = '';
@@ -501,17 +501,17 @@ class ProcoreApiDocToOpenApiTransformer {
           required: true,
           content: {
             'application/json': {
-              schema: this.bodyParamsToSchema(bodyParams),
+              schema: this.transformBodyParams(bodyParams),
               example: example || undefined,
             },
           },
         },
-        responses: this.responsesToResponses(responses),
+        responses: this.transformResponses(responses),
       },
     };
   }
 
-  versionToOpenapi(version) {
+  transformVersion(version) {
     const {
       api_version: apiVersion,
       endpoints,
@@ -552,7 +552,7 @@ class ProcoreApiDocToOpenApiTransformer {
         continue; // eslint-disable-line no-continue
       }
 
-      const { path, method, operation } = this.endpointToOperation(endpoint);
+      const { path, method, operation } = this.transformEndpoint(endpoint);
 
       if (operation.tags === undefined) {
         operation.tags = opTags;
@@ -588,7 +588,7 @@ class ProcoreApiDocToOpenApiTransformer {
     };
   }
 
-  versionsToOpenapi(versions) {
+  transformVersions(versions) {
     if (!Array.isArray(versions)) {
       throw new TypeError('versions must be an Array');
     }
@@ -597,10 +597,10 @@ class ProcoreApiDocToOpenApiTransformer {
       warn('Found %d versions.  Ignoring all but the last.', versions.length);
     }
 
-    return this.versionToOpenapi(versions[versions.length - 1]);
+    return this.transformVersion(versions[versions.length - 1]);
   }
 
-  docToOpenapi(doc) {
+  transformApiDoc(doc) {
     if (!doc || typeof doc !== 'object') {
       throw new TypeError('doc must be an object');
     }
@@ -619,7 +619,7 @@ class ProcoreApiDocToOpenApiTransformer {
       warn('Unrecognized properties on doc:', unrecognizedProps);
     }
 
-    return this.versionsToOpenapi(versions);
+    return this.transformVersions(versions);
   }
 };
 
@@ -672,7 +672,7 @@ function combineOpenapis(openapiDocs) {
 exports.docsToOpenapi =
 function docsToOpenapi(docs, options) {
   const transformer = new exports.ProcoreApiDocToOpenApiTransformer(options);
-  return combineOpenapis(docs.map((doc) => transformer.docToOpenapi(doc)));
+  return combineOpenapis(docs.map((doc) => transformer.transformApiDoc(doc)));
 };
 
 exports.makeEndpointFilter =
