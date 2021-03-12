@@ -37,6 +37,95 @@ function removeMatch(string, match) {
     + string.slice(match.index + match[0].length);
 }
 
+function tuneSchema(transformer, name, schema) {
+  name = name || '';
+  let description = schema.description || '';
+
+  // Infer format from description
+  // https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.7
+  if (schema.type === 'string' && schema.format === undefined) {
+    if (/\bYYYY-MM-DD\b/i.test(description)) {
+      schema.format = 'date';
+    } else if (/\bdatetime range/i.test(description)) {
+      // No format for ISO 8601 datetime range
+      // https://en.wikipedia.org/wiki/ISO_8601#Time_intervals
+      // TODO: Set pattern for datetime/datetime?
+    } else if (/\bdatetime\b/i.test(description)) {
+      schema.format = 'date-time';
+    } else if (/\bUUID\b/i.test(description)) {
+      schema.format = 'uuid';
+    } else if (/^UR[IL]$/i.test(name) || /\bUR[IL]\b/i.test(description)) {
+      schema.format = 'uri';
+    } else if (/^email$/i.test(name) || /\bemail\b/i.test(description)) {
+      schema.format = 'email';
+    } else if (/\b(?:money|price|cost)\b/i.test(description)) {
+      schema.format = 'decimal';
+    }
+  }
+
+  // The Procore docs set min/max on hour/minute inconsistently.  Fix.
+  if (schema.type === 'integer'
+    && schema.maximum === undefined
+    && schema.minimum === undefined) {
+    if (/^(time_)?hour$/.test(name)) {
+      schema.maximum = 23;
+      schema.minimum = 0;
+    } else if (/^(time_)?minute$/.test(name)) {
+      schema.maximum = 59;
+      schema.minimum = 0;
+    }
+  }
+
+  if (description) {
+    // Check for deprecation notice
+    const deprecatedXY =
+      description.match(/:(\S+) to be deprecated, use :(\S+)/);
+    if (deprecatedXY) {
+      const deprecatedName = deprecatedXY[1];
+      if (deprecatedName === name) {
+        // Mark schema as deprecated
+        schema.deprecated = true;
+
+        // Indicate replacement using x-deprecated from Autorest
+        // https://github.com/Azure/autorest/tree/master/Samples/test/deprecated
+        schema['x-deprecated'] = {
+          'replaced-by': deprecatedXY[2],
+        };
+
+        // Remove from description, which is now redundant.
+        description = removeMatch(description, deprecatedXY);
+      } else if ((schema.properties && schema.properties[deprecatedName])
+        || (schema.items
+          && schema.items.properties
+          && schema.items.properties[deprecatedName])) {
+        // Notice on parent object or grandparent array schema is not useful.
+        description = removeMatch(description, deprecatedXY);
+      } else {
+        // Don't understand.  Leave as-is.
+        warn('Deprecation notice for %s on %s!?', deprecatedName, name);
+      }
+    }
+
+    // Deprecation notice on recommended replacement.
+    const deprecatedYX =
+      description.match(/Use :(\S+), :(\S+) to be deprecated/);
+    if (deprecatedYX) {
+      const useName = deprecatedYX[1];
+      if (useName === name) {
+        // Notice on recommended replacement is not very useful.  Remove.
+        description = removeMatch(description, deprecatedYX);
+      } else {
+        // Don't understand.  Leave as-is.
+        warn('Deprecation notice to use %s on %s!?', useName, name);
+      }
+    }
+
+    schema.description = description || undefined;
+  }
+
+  return schema;
+}
+
 exports.ProcoreApiDocToOpenApiTransformer =
 class ProcoreApiDocToOpenApiTransformer {
   constructor(options = {}) {
@@ -45,95 +134,6 @@ class ProcoreApiDocToOpenApiTransformer {
     }
 
     this.options = options;
-  }
-
-  tuneSchema(name, schema) {
-    name = name || '';
-    let description = schema.description || '';
-
-    // Infer format from description
-    // https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.7
-    if (schema.type === 'string' && schema.format === undefined) {
-      if (/\bYYYY-MM-DD\b/i.test(description)) {
-        schema.format = 'date';
-      } else if (/\bdatetime range/i.test(description)) {
-        // No format for ISO 8601 datetime range
-        // https://en.wikipedia.org/wiki/ISO_8601#Time_intervals
-        // TODO: Set pattern for datetime/datetime?
-      } else if (/\bdatetime\b/i.test(description)) {
-        schema.format = 'date-time';
-      } else if (/\bUUID\b/i.test(description)) {
-        schema.format = 'uuid';
-      } else if (/^UR[IL]$/i.test(name) || /\bUR[IL]\b/i.test(description)) {
-        schema.format = 'uri';
-      } else if (/^email$/i.test(name) || /\bemail\b/i.test(description)) {
-        schema.format = 'email';
-      } else if (/\b(?:money|price|cost)\b/i.test(description)) {
-        schema.format = 'decimal';
-      }
-    }
-
-    // The Procore docs set min/max on hour/minute inconsistently.  Fix.
-    if (schema.type === 'integer'
-      && schema.maximum === undefined
-      && schema.minimum === undefined) {
-      if (/^(time_)?hour$/.test(name)) {
-        schema.maximum = 23;
-        schema.minimum = 0;
-      } else if (/^(time_)?minute$/.test(name)) {
-        schema.maximum = 59;
-        schema.minimum = 0;
-      }
-    }
-
-    if (description) {
-      // Check for deprecation notice
-      const deprecatedXY =
-        description.match(/:(\S+) to be deprecated, use :(\S+)/);
-      if (deprecatedXY) {
-        const deprecatedName = deprecatedXY[1];
-        if (deprecatedName === name) {
-          // Mark schema as deprecated
-          schema.deprecated = true;
-
-          // Indicate replacement using x-deprecated from Autorest
-          // https://github.com/Azure/autorest/tree/master/Samples/test/deprecated
-          schema['x-deprecated'] = {
-            'replaced-by': deprecatedXY[2],
-          };
-
-          // Remove from description, which is now redundant.
-          description = removeMatch(description, deprecatedXY);
-        } else if ((schema.properties && schema.properties[deprecatedName])
-          || (schema.items
-            && schema.items.properties
-            && schema.items.properties[deprecatedName])) {
-          // Notice on parent object or grandparent array schema is not useful.
-          description = removeMatch(description, deprecatedXY);
-        } else {
-          // Don't understand.  Leave as-is.
-          warn('Deprecation notice for %s on %s!?', deprecatedName, name);
-        }
-      }
-
-      // Deprecation notice on recommended replacement.
-      const deprecatedYX =
-        description.match(/Use :(\S+), :(\S+) to be deprecated/);
-      if (deprecatedYX) {
-        const useName = deprecatedYX[1];
-        if (useName === name) {
-          // Notice on recommended replacement is not very useful.  Remove.
-          description = removeMatch(description, deprecatedYX);
-        } else {
-          // Don't understand.  Leave as-is.
-          warn('Deprecation notice to use %s on %s!?', useName, name);
-        }
-      }
-
-      schema.description = description || undefined;
-    }
-
-    return schema;
   }
 
   /** Transforms a path_params or query_params object to an OpenAPI Parameter
@@ -166,7 +166,7 @@ class ProcoreApiDocToOpenApiTransformer {
       type,
       enum: checkedEnum,
     };
-    return this.tuneSchema(name, schema);
+    return tuneSchema(this, name, schema);
   }
 
   /** Transforms path_params or query_params to an array of OpenAPI Parameter
@@ -385,7 +385,7 @@ class ProcoreApiDocToOpenApiTransformer {
         break;
     }
 
-    return this.tuneSchema(name, newSchema);
+    return tuneSchema(this, name, newSchema);
   }
 
   /** Transforms a responses array to an OpenAPI Responses Object.
