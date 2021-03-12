@@ -506,11 +506,11 @@ class ProcoreApiDocToOpenApiTransformer {
    * @returns {!object} OpenAPI Responses Object.
    */
   transformResponses(responses) {
-    const responseByStatus = {};
+    const responseByStatus = Object.create(null);
     for (const [i, response] of Object.entries(responses)) {
       const { status } = response;
 
-      if (responseByStatus[status]) {
+      if (hasOwnProperty.call(responseByStatus, status)) {
         throw new Error(`Multiple responses for status ${status}`);
       }
 
