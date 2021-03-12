@@ -415,6 +415,37 @@ class ProcoreApiDocToOpenApiTransformer {
     return tuneSchema(this, schema.field, newSchema);
   }
 
+  /** Transforms a response object to an OpenAPI Response Object.
+   *
+   * @param {!object} response responses array item.
+   * @returns {!object} OpenAPI Response Object.
+   */
+  transformResponse(response) {
+    const {
+      description,
+      status,
+      schema,
+      ...unrecognized
+    } = response;
+    const unrecognizedProps = Object.keys(unrecognized);
+    if (unrecognizedProps.length > 0) {
+      warn('Unrecognized properties on response:', unrecognizedProps);
+    }
+
+    if (schema.field) {
+      throw new Error('field on top-level schema');
+    }
+
+    return {
+      description: description || undefined,
+      content: {
+        'application/json': {
+          schema: this.transformSchema(schema),
+        },
+      },
+    };
+  }
+
   /** Transforms a responses array to an OpenAPI Responses Object.
    *
    * @param {!Array<!object>} responses responses array.
@@ -423,33 +454,13 @@ class ProcoreApiDocToOpenApiTransformer {
   transformResponses(responses) {
     const responseByStatus = {};
     for (const response of responses) {
-      const {
-        description,
-        status,
-        schema,
-        ...unrecognized
-      } = response;
-      const unrecognizedProps = Object.keys(unrecognized);
-      if (unrecognizedProps.length > 0) {
-        warn('Unrecognized properties on response:', unrecognizedProps);
-      }
+      const { status } = response;
 
       if (responseByStatus[status]) {
         throw new Error(`Multiple responses for status ${status}`);
       }
 
-      if (schema.field) {
-        throw new Error('field on top-level schema');
-      }
-
-      responseByStatus[status] = {
-        description: description || undefined,
-        content: {
-          'application/json': {
-            schema: this.transformSchema(schema),
-          },
-        },
-      };
+      responseByStatus[status] = this.transformResponse(response);
     }
 
     return responseByStatus;
