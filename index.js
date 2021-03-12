@@ -406,6 +406,10 @@ class ProcoreApiDocToOpenApiTransformer {
    * @returns {!object} JSON Schema properties.
    */
   transformSchemaProperties(properties) {
+    if (properties.length === 0) {
+      return undefined;
+    }
+
     const propertiesByName = Object.create(null);
     for (const [i, property] of Object.entries(properties)) {
       const { field } = property;
@@ -457,7 +461,7 @@ class ProcoreApiDocToOpenApiTransformer {
       case 'object':
         newSchema = {
           ...schema,
-          properties: visit(
+          properties: properties === undefined ? undefined : visit(
             this,
             this.transformSchemaProperties,
             'properties',
