@@ -719,14 +719,6 @@ class ProcoreApiDocToOpenApiTransformer {
       warn('Unrecognized properties on version:', unrecognizedProps);
     }
 
-    if (apiVersion !== 1) {
-      warn('Unexpected api_version:', apiVersion);
-    }
-
-    if (resourceVersion !== 0) {
-      warn('Unexpected resource_version:', resourceVersion);
-    }
-
     const paths = visit(this, this.transformEndpoints, 'endpoints', endpoints);
     const tagDocsUrl = `https://developers.procore.com/reference/rest/v1/${
       groupNameToUrlPath(name)}`;
