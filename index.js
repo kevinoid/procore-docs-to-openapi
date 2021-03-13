@@ -419,14 +419,14 @@ class ProcoreApiDocToOpenApiTransformer {
 
           patternProperties[pattern] = schema;
         }
-      }
 
-      if (required) {
-        const parentRequired = parentSchema.required;
-        if (!parentRequired) {
-          parentSchema.required = [name];
-        } else {
-          parentSchema.required.push(name);
+        if (required) {
+          const parentRequired = parentObjectSchema.required;
+          if (!parentRequired) {
+            parentObjectSchema.required = [name];
+          } else {
+            parentObjectSchema.required.push(name);
+          }
         }
       }
 
