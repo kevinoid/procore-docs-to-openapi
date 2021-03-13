@@ -8,6 +8,7 @@
 
 const assert = require('assert');
 const camelCase = require('camelcase');
+const escapeStringRegexp = require('escape-string-regexp');
 const { debuglog } = require('util');
 
 const groupNameToUrlPath = require('./lib/group-name-to-url-path.js');
@@ -380,11 +381,48 @@ class ProcoreApiDocToOpenApiTransformer {
           throw new Error('missing name for child param of object');
         }
 
-        if (hasOwnProperty.call(parentProperties, name)) {
-          throw new Error(`duplicate property ${name} for parameter`);
-        }
+        // Procore docs represent variables in param names as %{var}
+        // e.g. "custom_field_%{custom_field_definition_id}"
+        const variableParts = name.split(/(%\{[^}]+\})/g).filter(Boolean);
+        if (variableParts.length === 1 && !variableParts[0].startsWith('%{')) {
+          // No variables in name, add to properties
+          if (hasOwnProperty.call(parentProperties, name)) {
+            throw new Error(`duplicate property ${name} for parameter`);
+          }
 
-        parentProperties[name] = schema;
+          parentProperties[name] = schema;
+        } else {
+          // Variables in name, add converted pattern to patternProperties
+          // Note: patterns are not implicitly anchored.  Need ^$.
+          // https://github.com/json-schema-org/json-schema-spec/issues/897
+          let pattern = '^';
+          for (const variablePart of variableParts) {
+            if (variablePart.startsWith('%{')) {
+              if (variablePart.endsWith('_id}')) {
+                pattern += '([0-9]+)';
+              } else {
+                pattern += '(.*)';
+              }
+            } else {
+              pattern += escapeStringRegexp(variablePart);
+            }
+          }
+          pattern += '$';
+
+          let { patternProperties } = parentSchema;
+          if (!patternProperties) {
+            patternProperties = Object.create(null);
+            parentSchema.patternProperties = patternProperties;
+          }
+
+          if (hasOwnProperty.call(patternProperties, pattern)) {
+            throw new Error(
+              `duplicate patternProperty ${pattern} for parameter ${name}`,
+            );
+          }
+
+          patternProperties[pattern] = schema;
+        }
       }
 
       if (required) {
