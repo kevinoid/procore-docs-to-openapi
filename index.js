@@ -605,7 +605,7 @@ class ProcoreApiDocToOpenApiTransformer {
         summary: clSummary,
         support_level: clSupportLevel,
         type: clType,
-        versions: clVersions,
+        // TODO: versions
       } of changelog) {
         if (clEndpoint !== expectEndpoint) {
           warn(
@@ -621,15 +621,6 @@ class ProcoreApiDocToOpenApiTransformer {
             'Expected changelog entry to have support_level %s, got %s',
             supportLevel,
             clSupportLevel.toLowerCase(),
-          );
-        }
-        if (clVersions.length !== 1 || clVersions[0] !== '1.0') {
-          // TODO: Add column for versions (or min version?)?
-          // FIXME: How to reconcile with parent version object?
-          warn(
-            'Expected changelog entry to have versions %o, got %o',
-            ['1.0'],
-            clVersions,
           );
         }
 
