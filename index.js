@@ -348,28 +348,18 @@ class ProcoreApiDocToOpenApiTransformer {
 
         parentSchema.items = schema;
       } else {
-        let parentProperties;
+        let parentObjectSchema;
         if (parentType === 'object') {
           // Parameter is property of parent object
-          parentProperties = parentSchema.properties;
-          if (!parentProperties) {
-            parentProperties = Object.create(null);
-            parentSchema.properties = parentProperties;
-          }
+          parentObjectSchema = parentSchema;
         } else if (parentType === 'array') {
           // Parameter is property of parent array item
-          const { items } = parentSchema;
-          if (!items) {
-            parentProperties = Object.create(null);
-            parentSchema.items = {
-              type: 'object',
-              properties: parentProperties,
-            };
-          } else {
-            parentProperties = items.properties;
-            if (items.type !== 'object' || !parentProperties) {
-              throw new Error(`property ${name} for array of non-object items`);
-            }
+          parentObjectSchema = parentSchema.items;
+          if (!parentObjectSchema) {
+            parentObjectSchema = { type: 'object' };
+            parentSchema.items = parentObjectSchema;
+          } else if (parentObjectSchema.type !== 'object') {
+            throw new Error(`property ${name} for array of non-object items`);
           }
         } else {
           throw new Error(
@@ -386,6 +376,12 @@ class ProcoreApiDocToOpenApiTransformer {
         const variableParts = name.split(/(%\{[^}]+\})/g).filter(Boolean);
         if (variableParts.length === 1 && !variableParts[0].startsWith('%{')) {
           // No variables in name, add to properties
+          let parentProperties = parentObjectSchema.properties;
+          if (!parentProperties) {
+            parentProperties = Object.create(null);
+            parentObjectSchema.properties = parentProperties;
+          }
+
           if (hasOwnProperty.call(parentProperties, name)) {
             throw new Error(`duplicate property ${name} for parameter`);
           }
@@ -409,10 +405,10 @@ class ProcoreApiDocToOpenApiTransformer {
           }
           pattern += '$';
 
-          let { patternProperties } = parentSchema;
+          let { patternProperties } = parentObjectSchema;
           if (!patternProperties) {
             patternProperties = Object.create(null);
-            parentSchema.patternProperties = patternProperties;
+            parentObjectSchema.patternProperties = patternProperties;
           }
 
           if (hasOwnProperty.call(patternProperties, pattern)) {
