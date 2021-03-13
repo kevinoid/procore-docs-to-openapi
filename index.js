@@ -38,9 +38,40 @@ function removeMatch(string, match) {
     + string.slice(match.index + match[0].length);
 }
 
+function enumIsDateFormats(enumValues) {
+  if (!Array.isArray(enumValues) || enumValues.length === 0) {
+    return false;
+  }
+
+  const formats = enumValues.filter((v) => /^((YYYY|MM|DD)[-/]?)+$/.test(v));
+  if (formats.length === enumValues.length) {
+    return true;
+  }
+
+  if (formats.length > 0) {
+    warn('Some, but not all, enum values look like date formats:', formats);
+  }
+
+  return false;
+}
+
 function tuneSchema(transformer, name, schema) {
   name = name || '';
   let description = schema.description || '';
+
+  if (enumIsDateFormats(schema.enum)) {
+    if (schema.type !== 'string') {
+      warn('schema with date format enum has type %s', schema.type);
+    }
+
+    if (schema.format === undefined) {
+      schema.format = 'date';
+    } else if (schema.format !== 'date') {
+      warn('schema with date format enum has format %s', schema.format);
+    }
+
+    schema.enum = undefined;
+  }
 
   // Infer format from description
   // https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.7
