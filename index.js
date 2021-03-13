@@ -336,53 +336,55 @@ class ProcoreApiDocToOpenApiTransformer {
 
       const schema = visit(this, this.transformParam, i, param);
       const parentType = parentSchema.type;
-      if (parentType === 'object') {
+      if (parentType === 'array' && !name) {
+        // Parameter is array item
+        if (parentSchema.items) {
+          throw new Error(
+            `item schema for array with existing item schema: ${
+              JSON.stringify(parentSchema.items)}`,
+          );
+        }
+
+        parentSchema.items = schema;
+      } else {
+        let parentProperties;
+        if (parentType === 'object') {
+          // Parameter is property of parent object
+          parentProperties = parentSchema.properties;
+          if (!parentProperties) {
+            parentProperties = Object.create(null);
+            parentSchema.properties = parentProperties;
+          }
+        } else if (parentType === 'array') {
+          // Parameter is property of parent array item
+          const { items } = parentSchema;
+          if (!items) {
+            parentProperties = Object.create(null);
+            parentSchema.items = {
+              type: 'object',
+              properties: parentProperties,
+            };
+          } else {
+            parentProperties = items.properties;
+            if (items.type !== 'object' || !parentProperties) {
+              throw new Error(`property ${name} for array of non-object items`);
+            }
+          }
+        } else {
+          throw new Error(
+            `param ${name} is child of non-object/array type ${parentType}`,
+          );
+        }
+
         if (!name) {
           throw new Error('missing name for child param of object');
         }
 
-        const parentProperties = parentSchema.properties;
-        if (!parentProperties) {
-          parentSchema.properties = { [name]: schema };
-        } else if (!parentProperties[name]) {
-          parentProperties[name] = schema;
-        } else {
+        if (hasOwnProperty.call(parentProperties, name)) {
           throw new Error(`duplicate property ${name} for parameter`);
         }
-      } else if (parentType === 'array') {
-        if (name === null) {
-          if (parentSchema.items) {
-            throw new Error(
-              `item schema for array with existing item schema: ${
-                JSON.stringify(parentSchema.items)}`,
-            );
-          }
 
-          parentSchema.items = schema;
-        } else if (!parentSchema.items) {
-          parentSchema.items = {
-            type: 'object',
-            properties: {
-              [name]: schema,
-            },
-          };
-        } else {
-          const { items } = parentSchema;
-          const { properties } = items;
-          if (items.type !== 'object' || !properties) {
-            throw new Error(`property ${name} for array of non-object items`);
-          }
-          if (hasOwnProperty.call(properties, name)) {
-            throw new Error(
-              `duplicate property ${name} for array item parameter`,
-            );
-          }
-          properties[name] = schema;
-        }
-      } else {
-        throw new Error(
-          `param ${name} is child of non-object/array type ${parentType}`,
-        );
+        parentProperties[name] = schema;
       }
 
       if (required) {
