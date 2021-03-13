@@ -682,7 +682,11 @@ class ProcoreApiDocToOpenApiTransformer {
         description: clDescription,
         endpoint: clEndpoint,
         summary: clSummary,
-        support_level: clSupportLevel,
+        // FIXME: What is the meaning of support_level?
+        // For example, some changelogs in weather-logs.json have
+        // support_level: "alpha" for endpoints which are "production".
+        // Maybe changelog item was added when endpoint was "alpha"?
+        // support_level: clSupportLevel,
         type: clType,
         // TODO: versions
       } of changelog) {
@@ -691,15 +695,6 @@ class ProcoreApiDocToOpenApiTransformer {
             'Expected changelog entry to have endpoint %s, got %s',
             expectEndpoint,
             clEndpoint,
-          );
-        }
-        if (clSupportLevel.toLowerCase() !== supportLevel) {
-          // TODO: Add column for support level?
-          // FIXME: How to reconcile with options.minSupportLevel?
-          warn(
-            'Expected changelog entry to have support_level %s, got %s',
-            supportLevel,
-            clSupportLevel.toLowerCase(),
           );
         }
 
