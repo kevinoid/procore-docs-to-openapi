@@ -359,6 +359,18 @@ class ProcoreApiDocToOpenApiTransformer {
       }
 
       const depth = indentation / indentIncrement;
+
+      // Procore docs omits array parameter for array of array
+      // Check for missing parent with grandparent array missing item type
+      if (depth > 2 && depth - 1 === schemaForDepth.length) {
+        const maybeGrandparent = schemaForDepth[depth - 2];
+        if (maybeGrandparent.type === 'array' && !maybeGrandparent.items) {
+          const parentArray = { type: 'array' };
+          maybeGrandparent.items = parentArray;
+          schemaForDepth[depth - 1] = parentArray;
+        }
+      }
+
       const parentSchema = schemaForDepth[depth - 1];
       if (!parentSchema) {
         throw new Error(
