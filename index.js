@@ -9,7 +9,7 @@
 const assert = require('assert');
 const camelCase = require('camelcase');
 const escapeStringRegexp = require('escape-string-regexp');
-const { debuglog } = require('util');
+const { debuglog, isDeepStrictEqual } = require('util');
 
 const groupNameToUrlPath = require('./lib/group-name-to-url-path.js');
 
@@ -708,7 +708,11 @@ class ProcoreApiDocToOpenApiTransformer {
         operationId: camelCase(summary),
         summary: combinedSummary || undefined,
         description: combinedDescription || undefined,
-        tags: group ? [group] : undefined,
+        externalDocs: !group ? undefined : {
+          url: `https://developers.procore.com/reference/rest/v1/${
+            groupNameToUrlPath(group)}`,
+        },
+        tags: tools,
         deprecated: deprecatedAt ? true : undefined,
         parameters: parameters.length > 0 ? parameters : undefined,
         requestBody: bodyParams.length === 0 ? undefined : {
@@ -787,19 +791,16 @@ class ProcoreApiDocToOpenApiTransformer {
     }
 
     const paths = visit(this, this.transformEndpoints, 'endpoints', endpoints);
-    const tagDocsUrl = `https://developers.procore.com/reference/rest/v1/${
-      groupNameToUrlPath(name)}`;
-    const opTags = [name];
 
     for (const pathItem of Object.values(paths)) {
       for (const operation of Object.values(pathItem)) {
-        if (operation.tags === undefined) {
-          operation.tags = opTags;
-        } else {
-          assert.deepStrictEqual(
+        if (!operation.tags || operation.tags.length === 0) {
+          operation.tags = tools;
+        } else if (!isDeepStrictEqual(operation.tags, tools)) {
+          warn(
+            'endpoint tools (%o) does not match version tools (%o)',
             operation.tags,
-            opTags,
-            'endpoint.group matches version.name',
+            tools,
           );
         }
       }
@@ -807,14 +808,6 @@ class ProcoreApiDocToOpenApiTransformer {
 
     return {
       openapi: openapiVersion,
-      tags: [
-        {
-          name,
-          externalDocs: {
-            url: tagDocsUrl,
-          },
-        },
-      ],
       paths,
     };
   }
