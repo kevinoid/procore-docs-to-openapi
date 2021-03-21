@@ -523,36 +523,29 @@ class ProcoreApiDocToOpenApiTransformer {
   transformSchema(schema) {
     const {
       field,
+      ...newSchema
+    } = schema;
+    const {
       items,
       properties,
       type,
     } = schema;
 
-    let newSchema;
     switch (type) {
       case 'array':
-        newSchema = {
-          ...schema,
-          items: visit(this, this.transformSchema, 'items', items),
-        };
+        newSchema.items = visit(this, this.transformSchema, 'items', items);
         break;
 
       case 'object':
-        newSchema = {
-          ...schema,
-          properties: properties === undefined ? undefined : visit(
-            this,
-            this.transformSchemaProperties,
-            'properties',
-            properties,
-          ),
-        };
+        newSchema.properties = properties === undefined ? undefined : visit(
+          this,
+          this.transformSchemaProperties,
+          'properties',
+          properties,
+        );
         break;
 
       default:
-        newSchema = {
-          ...schema,
-        };
         break;
     }
 
