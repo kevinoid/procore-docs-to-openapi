@@ -12,6 +12,7 @@ const escapeStringRegexp = require('escape-string-regexp');
 const { debuglog, isDeepStrictEqual } = require('util');
 
 const groupNameToUrlPath = require('./lib/group-name-to-url-path.js');
+const toJsonPointer = require('./lib/to-json-pointer.js');
 
 const debug = debuglog('procore-docs-to-openapi');
 
@@ -162,19 +163,6 @@ function tuneSchema(transformer, name, schema) {
   }
 
   return schema;
-}
-
-/** Convert an Array of property names to a JSON Pointer (RFC 6901).
- *
- * @private
- * @param {!Array<string>} propPath Property names.
- * @returns {string} JSON Pointer.
- */
-function toJsonPointer(propPath) {
-  // eslint-disable-next-line prefer-template
-  return '/' + propPath
-    .map((p) => p.replace(/~/g, '~0').replace(/\//g, '~1'))
-    .join('/');
 }
 
 function visit(transformer, method, propName, propValue) {
