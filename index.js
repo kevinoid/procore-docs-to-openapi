@@ -885,13 +885,15 @@ function combineOpenapis(openapiDocs) {
       throw new Error(`Unsupported OpenAPI properties: ${unrecognizedKeys}`);
     }
 
-    for (const tag of tags) {
-      const tagName = tag.name;
-      const oldTag = tagsByName.get(tagName);
-      if (oldTag) {
-        assert.deepStrictEqual(tag, oldTag, `Tag ${tagName} must match`);
-      } else {
-        tagsByName.set(tagName, tag);
+    if (tags) {
+      for (const tag of tags) {
+        const tagName = tag.name;
+        const oldTag = tagsByName.get(tagName);
+        if (oldTag) {
+          assert.deepStrictEqual(tag, oldTag, `Tag ${tagName} must match`);
+        } else {
+          tagsByName.set(tagName, tag);
+        }
       }
     }
 
