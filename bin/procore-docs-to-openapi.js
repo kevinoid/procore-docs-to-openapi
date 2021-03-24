@@ -10,10 +10,11 @@
 'use strict';
 
 const { readFile } = require('fs');
-const { promisify } = require('util');
+const { format, promisify } = require('util');
 const Yargs = require('yargs/yargs');
 
 const packageJson = require('../package.json');
+const toJsonPointer = require('../lib/to-json-pointer.js');
 const {
   ProcoreApiDocToOpenApiTransformer,
   combineTransformedOpenapi,
@@ -140,17 +141,25 @@ function procoreDocsToOpenapiCmd(args, options, callback) {
       filenames.push('-');
     }
 
-    // Parse arguments then call API function with parsed options
-    const cmdOpts = {
-      verbosity: argOpts.verbose - argOpts.quiet,
-    };
+    const verbosity = argOpts.verbose - argOpts.quiet;
 
     // eslint-disable-next-line promise/catch-or-return
     Promise.all(filenames.map(readJson))
       .then((docs) => {
         const transformer = new ProcoreApiDocToOpenApiTransformer();
-        const openapiDocs =
-          docs.map((doc) => transformer.transformApiDoc(doc));
+        const openapiDocs = docs.map((doc, i) => {
+          if (verbosity >= 0) {
+            transformer.warn = function(...values) {
+              options.stderr.write(
+                `${filenames[i]}:${toJsonPointer(this.transformPath)}: ${
+                  format(...values)}\n`,
+              );
+            };
+          }
+
+          return transformer.transformApiDoc(doc);
+        });
+
         options.stdout.write(JSON.stringify(
           combineTransformedOpenapi(openapiDocs),
           undefined,
