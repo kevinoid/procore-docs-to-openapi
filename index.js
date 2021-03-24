@@ -911,7 +911,18 @@ class ProcoreApiDocToOpenApiTransformer {
   }
 };
 
-function combineOpenapis(openapiDocs) {
+/** Combines OpenAPI Objects created by {@see
+ * ProcoreApiDocToOpenApiTransformer}.
+ *
+ * @param {!Array<!object>} openapiDocs Array of OpenAPI Objects produced
+ * by {@see ProcoreApiDocToOpenApiTransformer}.
+ * @returns {!object} OpenAPI Object with all information from openapiDocs.
+ * @throws {Error} If any object in openapiDocs contains properties not
+ * produced by {@see ProcoreApiDocToOpenApiTransformer}.
+ * @throws {Error} If the same path appears in multiple objects in openapiDocs.
+ */
+exports.combineTransformedOpenapi =
+function combineTransformedOpenapi(openapiDocs) {
   const combinedPaths = Object.create(null);
   const tagsByName = new Map();
   for (const openapiDoc of openapiDocs) {
@@ -957,12 +968,14 @@ function combineOpenapis(openapiDocs) {
     tags: [...tagsByName.values()],
     paths: combinedPaths,
   };
-}
+};
 
 exports.docsToOpenapi =
 function docsToOpenapi(docs, options) {
   const transformer = new exports.ProcoreApiDocToOpenApiTransformer(options);
-  return combineOpenapis(docs.map((doc) => transformer.transformApiDoc(doc)));
+  return exports.combineTransformedOpenapi(
+    docs.map((doc) => transformer.transformApiDoc(doc)),
+  );
 };
 
 exports.makeEndpointFilter =
