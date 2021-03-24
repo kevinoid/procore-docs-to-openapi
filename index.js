@@ -867,7 +867,7 @@ class ProcoreApiDocToOpenApiTransformer {
     }
 
     if (versions.length > 1) {
-      debug('Found %d versions.  Ignoring all but the last.', versions.length);
+      warn('Found %d versions.  Ignoring all but the last.', versions.length);
     }
 
     const last = versions.length - 1;
