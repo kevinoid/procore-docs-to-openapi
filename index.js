@@ -68,13 +68,13 @@ function tuneSchema(transformer, name, schema) {
 
   if (enumIsDateFormats(schema.enum)) {
     if (schema.type !== 'string') {
-      this.warn('schema with date format enum has type %s', schema.type);
+      this.warn('schema with date format enum has type %O', schema.type);
     }
 
     if (schema.format === undefined) {
       schema.format = 'date';
     } else if (schema.format !== 'date') {
-      this.warn('schema with date format enum has format %s', schema.format);
+      this.warn('schema with date format enum has format %O', schema.format);
     }
 
     schema.enum = undefined;
@@ -141,7 +141,7 @@ function tuneSchema(transformer, name, schema) {
         description = removeMatch(description, deprecatedXY);
       } else {
         // Don't understand.  Leave as-is.
-        this.warn('Deprecation notice for %s on %s!?', deprecatedName, name);
+        this.warn('Deprecation notice for %O on %O!?', deprecatedName, name);
       }
     }
 
@@ -155,7 +155,7 @@ function tuneSchema(transformer, name, schema) {
         description = removeMatch(description, deprecatedYX);
       } else {
         // Don't understand.  Leave as-is.
-        this.warn('Deprecation notice to use %s on %s!?', useName, name);
+        this.warn('Deprecation notice to use %O on %O!?', useName, name);
       }
     }
 
@@ -298,8 +298,8 @@ class ProcoreApiDocToOpenApiTransformer {
       const unrecognizedProps = Object.keys(unrecognized);
       if (unrecognizedProps.length > 0) {
         this.warn(
-          'Unrecognized properties on %s_param:',
-          paramsIn,
+          'Unrecognized properties on %O:',
+          `${paramsIn}_param`,
           unrecognizedProps,
         );
       }
@@ -685,7 +685,7 @@ class ProcoreApiDocToOpenApiTransformer {
     const versionName = this[versionNameSymbol];
     if (versionName && group !== versionName) {
       this.warn(
-        'endpoint.group (%s) differs from ancestor version.name (%s).'
+        'endpoint.group (%O) differs from ancestor version.name (%O).'
         + '  Using version.name for externalDocs.url.',
         group,
         versionName,
@@ -733,7 +733,7 @@ class ProcoreApiDocToOpenApiTransformer {
       } of changelog) {
         if (clEndpoint !== expectEndpoint) {
           this.warn(
-            'Expected changelog entry to have endpoint %s, got %s',
+            'Expected changelog entry to have endpoint %O, got %O',
             expectEndpoint,
             clEndpoint,
           );
@@ -753,7 +753,7 @@ class ProcoreApiDocToOpenApiTransformer {
     const tags = tools || versionTools;
     if (tools && versionTools && !isDeepStrictEqual(tools, versionTools)) {
       this.warn(
-        'endpoint.tools (%o) differs from ancestor version.tools (%o).'
+        'endpoint.tools (%O) differs from ancestor version.tools (%O).'
         + '  Using endpoint.tools for tags.',
         tools,
         versionTools,
