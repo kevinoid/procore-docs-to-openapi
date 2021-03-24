@@ -14,7 +14,10 @@ const { promisify } = require('util');
 const Yargs = require('yargs/yargs');
 
 const packageJson = require('../package.json');
-const { docsToOpenapi } = require('..');
+const {
+  ProcoreApiDocToOpenApiTransformer,
+  combineTransformedOpenapi,
+} = require('..');
 
 // Note: fs.promises.readFile only accepts FileHandle, not number FD
 const readFileP = promisify(readFile);
@@ -144,11 +147,16 @@ function procoreDocsToOpenapiCmd(args, options, callback) {
 
     // eslint-disable-next-line promise/catch-or-return
     Promise.all(filenames.map(readJson))
-      .then((docs) => options.stdout.write(JSON.stringify(
-        docsToOpenapi(docs, cmdOpts),
-        undefined,
-        2,
-      )))
+      .then((docs) => {
+        const transformer = new ProcoreApiDocToOpenApiTransformer();
+        const openapiDocs =
+          docs.map((doc) => transformer.transformApiDoc(doc));
+        options.stdout.write(JSON.stringify(
+          combineTransformedOpenapi(openapiDocs),
+          undefined,
+          2,
+        ));
+      })
       .then(
         () => 0,
         (err) => {

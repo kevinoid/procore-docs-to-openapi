@@ -970,14 +970,6 @@ function combineTransformedOpenapi(openapiDocs) {
   };
 };
 
-exports.docsToOpenapi =
-function docsToOpenapi(docs, options) {
-  const transformer = new exports.ProcoreApiDocToOpenApiTransformer(options);
-  return exports.combineTransformedOpenapi(
-    docs.map((doc) => transformer.transformApiDoc(doc)),
-  );
-};
-
 exports.makeEndpointFilter =
 function makeEndpointFilter(minSupportLevel, includeBetaPrograms) {
   const minIndex = supportLevels.indexOf(minSupportLevel);
