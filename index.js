@@ -18,6 +18,8 @@ const warn = debug;
 
 const indentIncrement = 2;
 
+const docsUrlSymbol = Symbol('docsUrl');
+
 /** OpenAPI Specification version of documents produced by this module.
  *
  * @private
@@ -210,6 +212,13 @@ class ProcoreApiDocToOpenApiTransformer {
      * @type {Array<string>}
      */
     this.transformPath = [];
+
+    /** URL of the Procore API docs for the current version object.
+     *
+     * @private
+     * @type {string=}
+     */
+    this[docsUrlSymbol] = undefined;
   }
 
   /** Transforms a path_params or query_params object to an OpenAPI Parameter
@@ -649,6 +658,11 @@ class ProcoreApiDocToOpenApiTransformer {
       ...visit(this, this.transformQueryParams, 'query_params', queryParams),
     ];
 
+    let docsUrl = this[docsUrlSymbol];
+    if (docsUrl && summary) {
+      docsUrl += `#${groupNameToUrlPath(summary)}`;
+    }
+
     let combinedSummary = '';
     if (internalOnly) {
       combinedSummary += '(Internal Only)';
@@ -708,10 +722,7 @@ class ProcoreApiDocToOpenApiTransformer {
         operationId: camelCase(summary),
         summary: combinedSummary || undefined,
         description: combinedDescription || undefined,
-        externalDocs: !group ? undefined : {
-          url: `https://developers.procore.com/reference/rest/v1/${
-            groupNameToUrlPath(group)}`,
-        },
+        externalDocs: docsUrl ? { url: docsUrl } : undefined,
         tags: tools,
         deprecated: deprecatedAt ? true : undefined,
         parameters: parameters.length > 0 ? parameters : undefined,
@@ -790,26 +801,33 @@ class ProcoreApiDocToOpenApiTransformer {
       warn('Unrecognized properties on version:', unrecognizedProps);
     }
 
-    const paths = visit(this, this.transformEndpoints, 'endpoints', endpoints);
+    this[docsUrlSymbol] = `https://developers.procore.com/reference/rest/v1/${
+      groupNameToUrlPath(name)}`;
+    try {
+      const paths =
+        visit(this, this.transformEndpoints, 'endpoints', endpoints);
 
-    for (const pathItem of Object.values(paths)) {
-      for (const operation of Object.values(pathItem)) {
-        if (!operation.tags || operation.tags.length === 0) {
-          operation.tags = tools;
-        } else if (!isDeepStrictEqual(operation.tags, tools)) {
-          warn(
-            'endpoint tools (%o) does not match version tools (%o)',
-            operation.tags,
-            tools,
-          );
+      for (const pathItem of Object.values(paths)) {
+        for (const operation of Object.values(pathItem)) {
+          if (!operation.tags || operation.tags.length === 0) {
+            operation.tags = tools;
+          } else if (!isDeepStrictEqual(operation.tags, tools)) {
+            warn(
+              'endpoint tools (%o) does not match version tools (%o)',
+              operation.tags,
+              tools,
+            );
+          }
         }
       }
-    }
 
-    return {
-      openapi: openapiVersion,
-      paths,
-    };
+      return {
+        openapi: openapiVersion,
+        paths,
+      };
+    } finally {
+      this[docsUrlSymbol] = undefined;
+    }
   }
 
   /** Transforms a versions array to an OpenAPI document.
