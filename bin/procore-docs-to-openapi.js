@@ -160,11 +160,9 @@ function procoreDocsToOpenapiCmd(args, options, callback) {
           return transformer.transformApiDoc(doc);
         });
 
-        options.stdout.write(JSON.stringify(
-          combineTransformedOpenapi(openapiDocs),
-          undefined,
-          2,
-        ));
+        const combined = openapiDocs.length < 2 ? openapiDocs[0]
+          : combineTransformedOpenapi(openapiDocs);
+        options.stdout.write(JSON.stringify(combined, undefined, 2));
       })
       .then(
         () => 0,
