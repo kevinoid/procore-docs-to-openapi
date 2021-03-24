@@ -248,9 +248,8 @@ class ProcoreApiDocToOpenApiTransformer {
    * @param {*} values Additional values to log.  Applied to substitution
    * string in message, if one matches, otherwise appended.
    */
-  // eslint-disable-next-line class-methods-use-this
   warn(message, ...values) {
-    debug(message, ...values);
+    debug(message, ...values, 'at', toJsonPointer(this.transformPath));
   }
 
   /** Transforms a path_params or query_params object to an OpenAPI Parameter
