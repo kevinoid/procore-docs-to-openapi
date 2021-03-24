@@ -14,7 +14,6 @@ const { debuglog, isDeepStrictEqual } = require('util');
 const groupNameToUrlPath = require('./lib/group-name-to-url-path.js');
 
 const debug = debuglog('procore-docs-to-openapi');
-const warn = debug;
 
 const indentIncrement = 2;
 
@@ -53,7 +52,10 @@ function enumIsDateFormats(enumValues) {
   }
 
   if (formats.length > 0) {
-    warn('Some, but not all, enum values look like date formats:', formats);
+    this.warn(
+      'Some, but not all, enum values look like date formats:',
+      formats,
+    );
   }
 
   return false;
@@ -65,13 +67,13 @@ function tuneSchema(transformer, name, schema) {
 
   if (enumIsDateFormats(schema.enum)) {
     if (schema.type !== 'string') {
-      warn('schema with date format enum has type %s', schema.type);
+      this.warn('schema with date format enum has type %s', schema.type);
     }
 
     if (schema.format === undefined) {
       schema.format = 'date';
     } else if (schema.format !== 'date') {
-      warn('schema with date format enum has format %s', schema.format);
+      this.warn('schema with date format enum has format %s', schema.format);
     }
 
     schema.enum = undefined;
@@ -138,7 +140,7 @@ function tuneSchema(transformer, name, schema) {
         description = removeMatch(description, deprecatedXY);
       } else {
         // Don't understand.  Leave as-is.
-        warn('Deprecation notice for %s on %s!?', deprecatedName, name);
+        this.warn('Deprecation notice for %s on %s!?', deprecatedName, name);
       }
     }
 
@@ -152,7 +154,7 @@ function tuneSchema(transformer, name, schema) {
         description = removeMatch(description, deprecatedYX);
       } else {
         // Don't understand.  Leave as-is.
-        warn('Deprecation notice to use %s on %s!?', useName, name);
+        this.warn('Deprecation notice to use %s on %s!?', useName, name);
       }
     }
 
@@ -237,6 +239,20 @@ class ProcoreApiDocToOpenApiTransformer {
     this[versionToolsSymbol] = undefined;
   }
 
+  /** Logs a warning about the transformation.
+   * May be overridden.
+   * Arguments are treated like console.log.
+   *
+   * @param {string|*} message Message with zero or more substitution strings,
+   * or first value to log.
+   * @param {*} values Additional values to log.  Applied to substitution
+   * string in message, if one matches, otherwise appended.
+   */
+  // eslint-disable-next-line class-methods-use-this
+  warn(message, ...values) {
+    debug(message, ...values);
+  }
+
   /** Transforms a path_params or query_params object to an OpenAPI Parameter
    * Object.
    *
@@ -256,7 +272,7 @@ class ProcoreApiDocToOpenApiTransformer {
     let checkedEnum;
     if (enumValues !== undefined && enumValues !== null) {
       if (!Array.isArray(enumValues)) {
-        warn('Unexpected non-Array enum:', enumValues);
+        this.warn('Unexpected non-Array enum:', enumValues);
       } else if (enumValues.length > 0) {
         checkedEnum = enumValues;
       }
@@ -291,7 +307,7 @@ class ProcoreApiDocToOpenApiTransformer {
       } = param;
       const unrecognizedProps = Object.keys(unrecognized);
       if (unrecognizedProps.length > 0) {
-        warn(
+        this.warn(
           'Unrecognized properties on %s_param:',
           paramsIn,
           unrecognizedProps,
@@ -369,11 +385,11 @@ class ProcoreApiDocToOpenApiTransformer {
       } = param;
       const unrecognizedProps = Object.keys(unrecognized);
       if (unrecognizedProps.length > 0) {
-        warn('Unrecognized properties on body_param:', unrecognizedProps);
+        this.warn('Unrecognized properties on body_param:', unrecognizedProps);
       }
 
       if (directChildOfObject !== undefined && directChildOfObject !== true) {
-        warn('Unrecognized direct_child_of_object:', directChildOfObject);
+        this.warn('Unrecognized direct_child_of_object:', directChildOfObject);
       }
 
       if (indentation < indentIncrement
@@ -591,7 +607,7 @@ class ProcoreApiDocToOpenApiTransformer {
     } = response;
     const unrecognizedProps = Object.keys(unrecognized);
     if (unrecognizedProps.length > 0) {
-      warn('Unrecognized properties on response:', unrecognizedProps);
+      this.warn('Unrecognized properties on response:', unrecognizedProps);
     }
 
     if (schema.field) {
@@ -619,7 +635,7 @@ class ProcoreApiDocToOpenApiTransformer {
       const { status } = response;
 
       if (typeof status !== 'string' || !/^[2-5][0-9][0-9]$/.test(status)) {
-        warn('Invalid status:', status);
+        this.warn('Invalid status:', status);
       }
 
       if (hasOwnProperty.call(responseByStatus, status)) {
@@ -666,7 +682,7 @@ class ProcoreApiDocToOpenApiTransformer {
     } = endpoint;
     const unrecognizedProps = Object.keys(unrecognized);
     if (unrecognizedProps.length > 0) {
-      warn('Unrecognized properties on endpoint:', unrecognizedProps);
+      this.warn('Unrecognized properties on endpoint:', unrecognizedProps);
     }
 
     const parameters = [
@@ -678,7 +694,7 @@ class ProcoreApiDocToOpenApiTransformer {
     // Currently occurs for several endpoints with "Drawings" group.
     const versionName = this[versionNameSymbol];
     if (versionName && group !== versionName) {
-      warn(
+      this.warn(
         'endpoint.group (%s) differs from ancestor version.name (%s).'
         + '  Using version.name for externalDocs.url.',
         group,
@@ -726,7 +742,7 @@ class ProcoreApiDocToOpenApiTransformer {
         // TODO: versions
       } of changelog) {
         if (clEndpoint !== expectEndpoint) {
-          warn(
+          this.warn(
             'Expected changelog entry to have endpoint %s, got %s',
             expectEndpoint,
             clEndpoint,
@@ -746,7 +762,7 @@ class ProcoreApiDocToOpenApiTransformer {
     const versionTools = this[versionToolsSymbol];
     const tags = tools || versionTools;
     if (tools && versionTools && !isDeepStrictEqual(tools, versionTools)) {
-      warn(
+      this.warn(
         'endpoint.tools (%o) differs from ancestor version.tools (%o).'
         + '  Using endpoint.tools for tags.',
         tools,
@@ -837,7 +853,7 @@ class ProcoreApiDocToOpenApiTransformer {
 
     const unrecognizedProps = Object.keys(unrecognized);
     if (unrecognizedProps.length > 0) {
-      warn('Unrecognized properties on version:', unrecognizedProps);
+      this.warn('Unrecognized properties on version:', unrecognizedProps);
     }
 
     this[docsUrlSymbol] = `https://developers.procore.com/reference/rest/v1/${
@@ -867,7 +883,10 @@ class ProcoreApiDocToOpenApiTransformer {
     }
 
     if (versions.length > 1) {
-      warn('Found %d versions.  Ignoring all but the last.', versions.length);
+      this.warn(
+        'Found %d versions.  Ignoring all but the last.',
+        versions.length,
+      );
     }
 
     const last = versions.length - 1;
@@ -895,7 +914,7 @@ class ProcoreApiDocToOpenApiTransformer {
     } = doc;
     const unrecognizedProps = Object.keys(unrecognized);
     if (unrecognizedProps.length > 0) {
-      warn('Unrecognized properties on doc:', unrecognizedProps);
+      this.warn('Unrecognized properties on doc:', unrecognizedProps);
     }
 
     return visit(this, this.transformVersions, 'versions', versions);
@@ -984,7 +1003,7 @@ function makeEndpointFilter(minSupportLevel, includeBetaPrograms) {
 
     const supportIndex = supportLevels.indexOf(supportLevel);
     if (supportIndex < 0) {
-      warn('Unrecognized support_level:', supportLevel);
+      this.warn('Unrecognized support_level:', supportLevel);
     }
 
     return supportIndex >= minIndex;
