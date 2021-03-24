@@ -249,7 +249,10 @@ class ProcoreApiDocToOpenApiTransformer {
    * string in message, if one matches, otherwise appended.
    */
   warn(message, ...values) {
-    debug(message, ...values, 'at', toJsonPointer(this.transformPath));
+    // Note: debug.enabled defined on Node.js v14.9.0 and later
+    if (debug.enabled !== false) {
+      debug(message, ...values, 'at', toJsonPointer(this.transformPath));
+    }
   }
 
   /** Transforms a path_params or query_params object to an OpenAPI Parameter
