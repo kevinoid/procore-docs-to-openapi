@@ -20,6 +20,7 @@ const indentIncrement = 2;
 
 const docsUrlSymbol = Symbol('docsUrl');
 const versionNameSymbol = Symbol('versionName');
+const versionToolsSymbol = Symbol('versionTools');
 
 /** OpenAPI Specification version of documents produced by this module.
  *
@@ -227,6 +228,13 @@ class ProcoreApiDocToOpenApiTransformer {
      * @type {string=}
      */
     this[versionNameSymbol] = undefined;
+
+    /** Tools categorization for the current Procore API version.
+     *
+     * @private
+     * @type {Array<string>=}
+     */
+    this[versionToolsSymbol] = undefined;
   }
 
   /** Transforms a path_params or query_params object to an OpenAPI Parameter
@@ -735,6 +743,17 @@ class ProcoreApiDocToOpenApiTransformer {
       }
     }
 
+    const versionTools = this[versionToolsSymbol];
+    const tags = tools || versionTools;
+    if (tools && versionTools && !isDeepStrictEqual(tools, versionTools)) {
+      warn(
+        'endpoint.tools (%o) differs from ancestor version.tools (%o).'
+        + '  Using endpoint.tools for tags.',
+        tools,
+        versionTools,
+      );
+    }
+
     return {
       path: basePath + path,
       method,
@@ -743,7 +762,7 @@ class ProcoreApiDocToOpenApiTransformer {
         summary: combinedSummary || undefined,
         description: combinedDescription || undefined,
         externalDocs: docsUrl ? { url: docsUrl } : undefined,
-        tags: tools,
+        tags,
         deprecated: deprecatedAt ? true : undefined,
         parameters: parameters.length > 0 ? parameters : undefined,
         requestBody: bodyParams.length === 0 ? undefined : {
@@ -824,31 +843,16 @@ class ProcoreApiDocToOpenApiTransformer {
     this[docsUrlSymbol] = `https://developers.procore.com/reference/rest/v1/${
       groupNameToUrlPath(name)}`;
     this[versionNameSymbol] = name;
+    this[versionToolsSymbol] = tools;
     try {
-      const paths =
-        visit(this, this.transformEndpoints, 'endpoints', endpoints);
-
-      for (const pathItem of Object.values(paths)) {
-        for (const operation of Object.values(pathItem)) {
-          if (!operation.tags || operation.tags.length === 0) {
-            operation.tags = tools;
-          } else if (!isDeepStrictEqual(operation.tags, tools)) {
-            warn(
-              'endpoint tools (%o) does not match version tools (%o)',
-              operation.tags,
-              tools,
-            );
-          }
-        }
-      }
-
       return {
         openapi: openapiVersion,
-        paths,
+        paths: visit(this, this.transformEndpoints, 'endpoints', endpoints),
       };
     } finally {
       this[docsUrlSymbol] = undefined;
       this[versionNameSymbol] = undefined;
+      this[versionToolsSymbol] = undefined;
     }
   }
 
