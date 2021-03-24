@@ -19,6 +19,7 @@ const warn = debug;
 const indentIncrement = 2;
 
 const docsUrlSymbol = Symbol('docsUrl');
+const versionNameSymbol = Symbol('versionName');
 
 /** OpenAPI Specification version of documents produced by this module.
  *
@@ -219,6 +220,13 @@ class ProcoreApiDocToOpenApiTransformer {
      * @type {string=}
      */
     this[docsUrlSymbol] = undefined;
+
+    /** Name of the current Procore API version object.
+     *
+     * @private
+     * @type {string=}
+     */
+    this[versionNameSymbol] = undefined;
   }
 
   /** Transforms a path_params or query_params object to an OpenAPI Parameter
@@ -658,6 +666,18 @@ class ProcoreApiDocToOpenApiTransformer {
       ...visit(this, this.transformQueryParams, 'query_params', queryParams),
     ];
 
+    // Warn if name used for docsUrl differs.
+    // Currently occurs for several endpoints with "Drawings" group.
+    const versionName = this[versionNameSymbol];
+    if (versionName && group !== versionName) {
+      warn(
+        'endpoint.group (%s) differs from ancestor version.name (%s).'
+        + '  Using version.name for externalDocs.url.',
+        group,
+        versionName,
+      );
+    }
+
     let docsUrl = this[docsUrlSymbol];
     if (docsUrl && summary) {
       docsUrl += `#${groupNameToUrlPath(summary)}`;
@@ -803,6 +823,7 @@ class ProcoreApiDocToOpenApiTransformer {
 
     this[docsUrlSymbol] = `https://developers.procore.com/reference/rest/v1/${
       groupNameToUrlPath(name)}`;
+    this[versionNameSymbol] = name;
     try {
       const paths =
         visit(this, this.transformEndpoints, 'endpoints', endpoints);
@@ -827,6 +848,7 @@ class ProcoreApiDocToOpenApiTransformer {
       };
     } finally {
       this[docsUrlSymbol] = undefined;
+      this[versionNameSymbol] = undefined;
     }
   }
 
