@@ -4,15 +4,13 @@
  * @module procore-docs-to-openapi
  */
 
-'use strict';
+import assert from 'assert';
+import camelCase from 'camelcase';
+import escapeStringRegexp from 'escape-string-regexp';
+import { debuglog, isDeepStrictEqual } from 'util';
 
-const assert = require('assert');
-const camelCase = require('camelcase');
-const escapeStringRegexp = require('escape-string-regexp');
-const { debuglog, isDeepStrictEqual } = require('util');
-
-const groupNameToUrlPath = require('./lib/group-name-to-url-path.js');
-const toJsonPointer = require('./lib/to-json-pointer.js');
+import groupNameToUrlPath from './lib/group-name-to-url-path.js';
+import toJsonPointer from './lib/to-json-pointer.js';
 
 const debug = debuglog('procore-docs-to-openapi');
 
@@ -190,8 +188,7 @@ function visit(transformer, method, propName, propValue) {
   }
 }
 
-exports.ProcoreApiDocToOpenApiTransformer =
-class ProcoreApiDocToOpenApiTransformer {
+export default class ProcoreApiDocToOpenApiTransformer {
   constructor(options = {}) {
     if (!options || typeof options !== 'object') {
       throw new TypeError('options must be an object or undefined');
@@ -909,7 +906,7 @@ class ProcoreApiDocToOpenApiTransformer {
 
     return visit(this, this.transformVersions, 'versions', versions);
   }
-};
+}
 
 /** Combines OpenAPI Objects created by {@see
  * ProcoreApiDocToOpenApiTransformer}.
@@ -921,8 +918,7 @@ class ProcoreApiDocToOpenApiTransformer {
  * produced by {@see ProcoreApiDocToOpenApiTransformer}.
  * @throws {Error} If the same path appears in multiple objects in openapiDocs.
  */
-exports.combineTransformedOpenapi =
-function combineTransformedOpenapi(openapiDocs) {
+export function combineTransformedOpenapi(openapiDocs) {
   const combinedPaths = Object.create(null);
   const tagsByName = new Map();
   for (const openapiDoc of openapiDocs) {
@@ -968,10 +964,9 @@ function combineTransformedOpenapi(openapiDocs) {
     tags: [...tagsByName.values()],
     paths: combinedPaths,
   };
-};
+}
 
-exports.makeEndpointFilter =
-function makeEndpointFilter(minSupportLevel, includeBetaPrograms) {
+export function makeEndpointFilter(minSupportLevel, includeBetaPrograms) {
   const minIndex = supportLevels.indexOf(minSupportLevel);
   if (minIndex < 0) {
     throw new RangeError(`Unrecognized minSupportLevel '${minSupportLevel}'`);
@@ -1003,4 +998,4 @@ function makeEndpointFilter(minSupportLevel, includeBetaPrograms) {
 
     return supportIndex >= minIndex;
   };
-};
+}

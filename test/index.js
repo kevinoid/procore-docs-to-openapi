@@ -1,16 +1,45 @@
 /**
- * @copyright Copyright 2016 Kevin Locke <kevin@kevinlocke.name>
+ * @copyright Copyright 2021 Kevin Locke <kevin@kevinlocke.name>
  * @license MIT
  */
 
-'use strict';
+import assert from 'assert';
 
-const procoreDocsToOpenapi = require('..');
+import ProcoreApiDocToOpenApiTransformer, {
+  combineTransformedOpenapi,
+  makeEndpointFilter,
+} from '../index.js';
 
-describe('procoreDocsToOpenapi', () => {
-  it('does something', (done) => {
-    // Assert something about procoreDocsToOpenapi here
-    procoreDocsToOpenapi.func();
-    done();
+describe('ProcoreApiDocToOpenApiTransformer', () => {
+  it('throws TypeError for non-object constructor argument', () => {
+    assert.throws(
+      () => new ProcoreApiDocToOpenApiTransformer(1),
+      TypeError,
+    );
+  });
+});
+
+describe('combineTransformedOpenapi', () => {
+  it('throws TypeError for non-iterable argument', () => {
+    assert.throws(
+      () => combineTransformedOpenapi(1),
+      TypeError,
+    );
+  });
+});
+
+describe('makeEndpointFilter', () => {
+  it('throws RangeError if minSupportLevel is unrecognized', () => {
+    assert.throws(
+      () => makeEndpointFilter('zulu'),
+      RangeError,
+    );
+  });
+
+  it('throws TypeError if includeBetaPrograms is not iterable', () => {
+    assert.throws(
+      () => makeEndpointFilter('alpha', 1),
+      TypeError,
+    );
   });
 });

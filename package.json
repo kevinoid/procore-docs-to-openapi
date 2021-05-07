@@ -15,14 +15,13 @@
     "type": "git",
     "url": "https://github.com/kevinoid/procore-docs-to-openapi.git"
   },
-  "type": "commonjs",
+  "type": "module",
   "files": [
     "*.js",
     "bin/",
     "lib/",
     "!**/.*"
   ],
-  "main": "index.js",
   "exports": {
     ".": "./index.js",
     "./package.json": "./package.json"
@@ -54,11 +53,11 @@
   },
   "dependencies": {
     "camelcase": "^5.3.1",
-    "escape-string-regexp": "^1.0.5",
-    "yargs": "^16.0.3"
+    "commander": "^7.0.0",
+    "escape-string-regexp": "^1.0.5"
   },
   "devDependencies": {
-    "@kevinoid/eslint-config": "^17.0.0",
+    "@kevinoid/eslint-config": "^17.1.0",
     "c8": "^7.0.0",
     "codecov": "^3.0.0",
     "coveralls": "^3.0.0",
@@ -75,7 +74,7 @@
     "rimraf": "^3.0.0"
   },
   "engines": {
-    "node": ">=10.17",
+    "node": ">=12.20 || >=14.13.1",
     "npm": ">=1.3.7"
   },
   "david": {
