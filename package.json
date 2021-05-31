@@ -54,7 +54,7 @@
   "dependencies": {
     "camelcase": "^5.3.1",
     "commander": "^7.0.0",
-    "escape-string-regexp": "^1.0.5"
+    "escape-string-regexp": "^5.0.0"
   },
   "devDependencies": {
     "@kevinoid/eslint-config": "^19.0.0",
