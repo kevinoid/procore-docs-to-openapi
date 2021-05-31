@@ -26,13 +26,6 @@ const versionToolsSymbol = Symbol('versionTools');
  */
 const openapiVersion = '3.1.0';
 
-const supportLevels = [
-  'internal',
-  'alpha',
-  'beta',
-  'production',
-];
-
 function removeMatch(string, match) {
   assert.strictEqual(match.input, string);
   return string.slice(0, match.index)
@@ -905,38 +898,4 @@ export default class ProcoreApiDocToOpenApiTransformer {
 
     return visit(this, this.transformVersions, 'versions', versions);
   }
-}
-
-export function makeEndpointFilter(minSupportLevel, includeBetaPrograms) {
-  const minIndex = supportLevels.indexOf(minSupportLevel);
-  if (minIndex < 0) {
-    throw new RangeError(`Unrecognized minSupportLevel '${minSupportLevel}'`);
-  }
-
-  if (!(includeBetaPrograms instanceof Set)) {
-    includeBetaPrograms = new Set(includeBetaPrograms);
-  }
-
-  return function endpointFilter({
-    support_level: supportLevel,
-    beta_programs: betaPrograms,
-    internal_only: internalOnly,
-  }) {
-    if (internalOnly && minIndex > 0) {
-      return false;
-    }
-
-    for (const betaProgram of betaPrograms) {
-      if (includeBetaPrograms.has(betaProgram)) {
-        return true;
-      }
-    }
-
-    const supportIndex = supportLevels.indexOf(supportLevel);
-    if (supportIndex < 0) {
-      this.warn('Unrecognized support_level:', supportLevel);
-    }
-
-    return supportIndex >= minIndex;
-  };
 }
