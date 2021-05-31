@@ -190,7 +190,7 @@ export default class ProcoreApiDocToOpenApiTransformer {
 
     /** Property names traversed in current transformation.
      *
-     * @type {Array<string>}
+     * @type {!Array<string>}
      */
     this.transformPath = [];
 
