@@ -6,7 +6,6 @@
 import assert from 'assert';
 
 import ProcoreApiDocToOpenApiTransformer, {
-  combineTransformedOpenapi,
   makeEndpointFilter,
 } from '../index.js';
 
@@ -14,15 +13,6 @@ describe('ProcoreApiDocToOpenApiTransformer', () => {
   it('throws TypeError for non-object constructor argument', () => {
     assert.throws(
       () => new ProcoreApiDocToOpenApiTransformer(1),
-      TypeError,
-    );
-  });
-});
-
-describe('combineTransformedOpenapi', () => {
-  it('throws TypeError for non-iterable argument', () => {
-    assert.throws(
-      () => combineTransformedOpenapi(1),
       TypeError,
     );
   });

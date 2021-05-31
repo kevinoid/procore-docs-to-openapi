@@ -9,8 +9,8 @@ import { Command } from 'commander';
 import { promises as fsPromises } from 'fs';
 import { format } from 'util';
 
-import ProcoreApiDocToOpenApiTransformer, { combineTransformedOpenapi }
-  from './index.js';
+import ProcoreApiDocToOpenApiTransformer from './index.js';
+import combineOpenapi from './combine.js';
 import { procoreApiDocToOpenApiTransformerMockSymbol } from './lib/symbols.js';
 import toJsonPointer from './lib/to-json-pointer.js';
 
@@ -188,7 +188,7 @@ export default async function procoreDocsToOpenapiMain(args, options) {
     });
 
     const combined = openapiDocs.length < 2 ? openapiDocs[0]
-      : combineTransformedOpenapi(openapiDocs);
+      : combineOpenapi(openapiDocs);
     options.stdout.write(JSON.stringify(combined, undefined, 2));
     return 0;
   } catch (err) {

@@ -25,7 +25,6 @@ const versionToolsSymbol = Symbol('versionTools');
  * @private
  */
 const openapiVersion = '3.1.0';
-const openapiMajorMinor = '3.1.';
 
 const supportLevels = [
   'internal',
@@ -906,64 +905,6 @@ export default class ProcoreApiDocToOpenApiTransformer {
 
     return visit(this, this.transformVersions, 'versions', versions);
   }
-}
-
-/** Combines OpenAPI Objects created by {@see
- * ProcoreApiDocToOpenApiTransformer}.
- *
- * @param {!Array<!object>} openapiDocs Array of OpenAPI Objects produced
- * by {@see ProcoreApiDocToOpenApiTransformer}.
- * @returns {!object} OpenAPI Object with all information from openapiDocs.
- * @throws {Error} If any object in openapiDocs contains properties not
- * produced by {@see ProcoreApiDocToOpenApiTransformer}.
- * @throws {Error} If the same path appears in multiple objects in openapiDocs.
- */
-export function combineTransformedOpenapi(openapiDocs) {
-  const combinedPaths = Object.create(null);
-  const tagsByName = new Map();
-  for (const openapiDoc of openapiDocs) {
-    const {
-      openapi,
-      tags,
-      paths,
-      ...unrecognized
-    } = openapiDoc;
-
-    if (!openapi.startsWith(openapiMajorMinor)) {
-      throw new Error(`Unsupported OpenAPI version: ${openapi}`);
-    }
-
-    const unrecognizedKeys = Object.keys(unrecognized);
-    if (unrecognizedKeys.length > 0) {
-      throw new Error(`Unsupported OpenAPI properties: ${unrecognizedKeys}`);
-    }
-
-    if (tags) {
-      for (const tag of tags) {
-        const tagName = tag.name;
-        const oldTag = tagsByName.get(tagName);
-        if (oldTag) {
-          assert.deepStrictEqual(tag, oldTag, `Tag ${tagName} must match`);
-        } else {
-          tagsByName.set(tagName, tag);
-        }
-      }
-    }
-
-    for (const [pathStr, pathObj] of Object.entries(paths)) {
-      if (hasOwnProperty.call(combinedPaths, pathStr)) {
-        throw new Error(`Duplicate path ${pathStr}`);
-      }
-
-      combinedPaths[pathStr] = pathObj;
-    }
-  }
-
-  return {
-    openapi: openapiVersion,
-    tags: [...tagsByName.values()],
-    paths: combinedPaths,
-  };
 }
 
 export function makeEndpointFilter(minSupportLevel, includeBetaPrograms) {
