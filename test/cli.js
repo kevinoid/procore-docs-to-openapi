@@ -4,7 +4,7 @@
  */
 
 import assert from 'assert';
-// TODO [engine:node@>=14]: Use readFile from 'fs/promises'
+// TODO [engine:node@>=14]: import { readFile } from 'fs/promises'
 import { promises as fsPromises } from 'fs';
 import { PassThrough } from 'stream';
 
@@ -120,8 +120,8 @@ describe('modulename/cli.js', () => {
 Command description.
 
 Options:
-  -q, --quiet    Print less output
-  -v, --verbose  Print more output
+  -q, --quiet    print less output
+  -v, --verbose  print more output
   -V, --version  output the version number
   -h, --help     display help for command
 `,
