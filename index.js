@@ -441,7 +441,7 @@ export default class ProcoreApiDocToOpenApiTransformer {
           // No variables in name, add to properties
           let parentProperties = parentObjectSchema.properties;
           if (!parentProperties) {
-            parentProperties = Object.create(null);
+            parentProperties = {};
             parentObjectSchema.properties = parentProperties;
           }
 
@@ -470,7 +470,7 @@ export default class ProcoreApiDocToOpenApiTransformer {
 
           let { patternProperties } = parentObjectSchema;
           if (!patternProperties) {
-            patternProperties = Object.create(null);
+            patternProperties = {};
             parentObjectSchema.patternProperties = patternProperties;
           }
 
@@ -509,7 +509,7 @@ export default class ProcoreApiDocToOpenApiTransformer {
       return undefined;
     }
 
-    const propertiesByName = Object.create(null);
+    const propertiesByName = {};
     for (const [i, property] of Object.entries(properties)) {
       const { field } = property;
       if (!field || typeof field !== 'string') {
@@ -609,7 +609,7 @@ export default class ProcoreApiDocToOpenApiTransformer {
    * @returns {!object} OpenAPI Responses Object.
    */
   transformResponses(responses) {
-    const responseByStatus = Object.create(null);
+    const responseByStatus = {};
     for (const [i, response] of Object.entries(responses)) {
       const { status } = response;
 
@@ -785,7 +785,7 @@ export default class ProcoreApiDocToOpenApiTransformer {
    * @returns {!object} OpenAPI Paths Object.
    */
   transformEndpoints(endpoints) {
-    const paths = Object.create(null);
+    const paths = {};
     for (const [i, endpoint] of Object.entries(endpoints)) {
       if (!this.options.endpointFilter
         || this.options.endpointFilter(endpoint)) {
