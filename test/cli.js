@@ -19,6 +19,8 @@ const packageJsonPromise =
 
 const sharedArgs = ['node', 'modulename'];
 
+const testOpenApi = { openapi: '3.1.0' };
+
 function neverCalled() {
   assert.fail('Should not be called');
 }
@@ -188,17 +190,18 @@ Options:
     const options = getTestOptions();
     options.stdin.end('{}');
     options[procoreApiDocToOpenApiTransformerMockSymbol] = class Bad {
-      transformApiDoc(openapi) {
+      transformApiDoc(doc) {
         this.transformPath = [];
         this.warn('mytest');
-        return openapi;
+        return testOpenApi;
       }
 
       warn() {} // eslint-disable-line class-methods-use-this
     };
     const code = await main([...sharedArgs, '--quiet'], options);
     assert.strictEqual(code, 0);
-    assert.strictEqual(options.stdout.read(), '{}');
+    const json = JSON.parse(options.stdout.read());
+    assert.strictEqual(json.openapi, testOpenApi.openapi);
     assert.strictEqual(options.stderr.read(), null);
   });
 
@@ -206,10 +209,10 @@ Options:
     const options = getTestOptions();
     options.stdin.end('{}');
     options[procoreApiDocToOpenApiTransformerMockSymbol] = class Bad {
-      transformApiDoc(openapi) {
+      transformApiDoc(doc) {
         this.transformPath = [];
         this.warn('mytest');
-        return openapi;
+        return testOpenApi;
       }
 
       warn() {} // eslint-disable-line class-methods-use-this
@@ -219,7 +222,8 @@ Options:
       options.stderr.read(),
       '-:/: mytest\n',
     );
-    assert.strictEqual(options.stdout.read(), '{}');
+    const json = JSON.parse(options.stdout.read());
+    assert.strictEqual(json.openapi, testOpenApi.openapi);
     assert.strictEqual(code, 0);
   });
 });
