@@ -13,6 +13,10 @@
       ]
     }],
 
+    // Procore API requests/responses use snake_case.
+    // Inline disable for every reference to API data is too tedious.
+    "camelcase": "off",
+
     // Allow CommonJS modules
     "unicorn/prefer-module": "off"
   },
