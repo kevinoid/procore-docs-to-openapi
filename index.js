@@ -548,6 +548,7 @@ export default class ProcoreApiDocToOpenApiTransformer {
     const {
       items,
       properties,
+      additionalProperties,
     } = schema;
 
     if (items !== undefined) {
@@ -560,6 +561,15 @@ export default class ProcoreApiDocToOpenApiTransformer {
         this.transformSchemaProperties,
         'properties',
         properties,
+      );
+    }
+
+    if (typeof additionalProperties === 'object') {
+      newSchema.additionalProperties = visit(
+        this,
+        this.transformSchema,
+        'additionalProperties',
+        additionalProperties,
       );
     }
 
