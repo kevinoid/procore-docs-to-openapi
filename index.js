@@ -26,12 +26,6 @@ const versionToolsSymbol = Symbol('versionTools');
  */
 const openapiVersion = '3.1.0';
 
-function removeMatch(string, match) {
-  assert.strictEqual(match.input, string);
-  return string.slice(0, match.index)
-    + string.slice(match.index + match[0].length);
-}
-
 function enumIsDateFormats(enumValues) {
   if (!Array.isArray(enumValues) || enumValues.length === 0) {
     return false;
@@ -54,7 +48,7 @@ function enumIsDateFormats(enumValues) {
 
 function tuneSchema(transformer, name, schema) {
   name = name || '';
-  let description = schema.description || '';
+  const description = schema.description || '';
 
   if (enumIsDateFormats(schema.enum)) {
     if (schema.type !== 'string') {
@@ -103,53 +97,6 @@ function tuneSchema(transformer, name, schema) {
       schema.maximum = 59;
       schema.minimum = 0;
     }
-  }
-
-  if (description) {
-    // Check for deprecation notice
-    const deprecatedXY =
-      description.match(/:(\S+) to be deprecated, use :(\S+)/);
-    if (deprecatedXY) {
-      const deprecatedName = deprecatedXY[1];
-      if (deprecatedName === name) {
-        // Mark schema as deprecated
-        schema.deprecated = true;
-
-        // Indicate replacement using x-deprecated from Autorest
-        // https://github.com/Azure/autorest/tree/master/Samples/test/deprecated
-        schema['x-deprecated'] = {
-          'replaced-by': deprecatedXY[2],
-        };
-
-        // Remove from description, which is now redundant.
-        description = removeMatch(description, deprecatedXY);
-      } else if ((schema.properties && schema.properties[deprecatedName])
-        || (schema.items
-          && schema.items.properties
-          && schema.items.properties[deprecatedName])) {
-        // Notice on parent object or grandparent array schema is not useful.
-        description = removeMatch(description, deprecatedXY);
-      } else {
-        // Don't understand.  Leave as-is.
-        this.warn('Deprecation notice for %O on %O!?', deprecatedName, name);
-      }
-    }
-
-    // Deprecation notice on recommended replacement.
-    const deprecatedYX =
-      description.match(/Use :(\S+), :(\S+) to be deprecated/);
-    if (deprecatedYX) {
-      const useName = deprecatedYX[1];
-      if (useName === name) {
-        // Notice on recommended replacement is not very useful.  Remove.
-        description = removeMatch(description, deprecatedYX);
-      } else {
-        // Don't understand.  Leave as-is.
-        this.warn('Deprecation notice to use %O on %O!?', useName, name);
-      }
-    }
-
-    schema.description = description || undefined;
   }
 
   return schema;
