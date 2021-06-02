@@ -54,7 +54,9 @@
   "dependencies": {
     "camelcase": "^6.2.0",
     "commander": "^7.0.0",
-    "escape-string-regexp": "^5.0.0"
+    "escape-string-regexp": "^5.0.0",
+    "json-ptr": "^2.2.0",
+    "openapi-transformer-base": "^1.1.0"
   },
   "devDependencies": {
     "@kevinoid/eslint-config": "^19.0.0",
