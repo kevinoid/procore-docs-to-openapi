@@ -28,29 +28,6 @@ const openapiVersion = '3.1.0';
 
 function tuneSchema(transformer, name, schema) {
   name = name || '';
-  const description = schema.description || '';
-
-  // Infer format from description
-  // https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.7
-  if (schema.type === 'string' && schema.format === undefined) {
-    if (/\bYYYY-MM-DD\b/i.test(description)) {
-      schema.format = 'date';
-    } else if (/\bdatetime range/i.test(description)) {
-      // No format for ISO 8601 datetime range
-      // https://en.wikipedia.org/wiki/ISO_8601#Time_intervals
-      // TODO: Set pattern for datetime/datetime?
-    } else if (/\bdatetime\b/i.test(description)) {
-      schema.format = 'date-time';
-    } else if (/\bUUID\b/i.test(description)) {
-      schema.format = 'uuid';
-    } else if (/^UR[IL]$/i.test(name) || /\bUR[IL]\b/i.test(description)) {
-      schema.format = 'uri';
-    } else if (/^email$/i.test(name) || /\bemail\b/i.test(description)) {
-      schema.format = 'email';
-    } else if (/\b(?:money|price|cost)\b/i.test(description)) {
-      schema.format = 'decimal';
-    }
-  }
 
   // The Procore docs set min/max on hour/minute inconsistently.  Fix.
   if (schema.type === 'integer'
