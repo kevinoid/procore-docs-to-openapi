@@ -26,25 +26,6 @@ const versionToolsSymbol = Symbol('versionTools');
  */
 const openapiVersion = '3.1.0';
 
-function tuneSchema(transformer, name, schema) {
-  name = name || '';
-
-  // The Procore docs set min/max on hour/minute inconsistently.  Fix.
-  if (schema.type === 'integer'
-    && schema.maximum === undefined
-    && schema.minimum === undefined) {
-    if (/^(time_)?hour$/.test(name)) {
-      schema.maximum = 23;
-      schema.minimum = 0;
-    } else if (/^(time_)?minute$/.test(name)) {
-      schema.maximum = 59;
-      schema.minimum = 0;
-    }
-  }
-
-  return schema;
-}
-
 function visit(transformer, method, propName, propValue) {
   transformer.transformPath.push(propName);
 
@@ -132,7 +113,6 @@ export default class ProcoreApiDocToOpenApiTransformer {
     const {
       description,
       enum: enumValues,
-      name,
       type,
     } = param;
 
@@ -147,12 +127,11 @@ export default class ProcoreApiDocToOpenApiTransformer {
       }
     }
 
-    const schema = {
+    return {
       description: description || undefined,
       type,
       enum: checkedEnum,
     };
-    return tuneSchema(this, name, schema);
   }
 
   /** Transforms path_params or query_params to an array of OpenAPI Parameter
@@ -463,7 +442,7 @@ export default class ProcoreApiDocToOpenApiTransformer {
       );
     }
 
-    return tuneSchema(this, field, newSchema);
+    return newSchema;
   }
 
   /** Transforms a response object to an OpenAPI Response Object.
