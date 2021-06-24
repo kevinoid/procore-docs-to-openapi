@@ -559,6 +559,10 @@ export default class ProcoreApiDocToOpenApiTransformer {
       );
     }
 
+    if (basePath[0] !== '/') {
+      this.warn('base_path (%s) is not absolute', basePath);
+    }
+
     let docsUrl = this[docsUrlSymbol];
     if (docsUrl && summary) {
       docsUrl += `#${groupNameToUrlPath(summary)}`;
