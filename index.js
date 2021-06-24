@@ -7,10 +7,15 @@
 import assert from 'assert';
 import camelCase from 'camelcase';
 import escapeStringRegexp from 'escape-string-regexp';
+// TODO [engine:node@>=15.3]: import { join as joinUrlPath } from 'path/posix';
+// eslint-disable-next-line unicorn/import-style
+import { posix as posixPath } from 'path';
 import { debuglog, isDeepStrictEqual } from 'util';
 
 import groupNameToUrlPath from './lib/group-name-to-url-path.js';
 import toJsonPointer from './lib/to-json-pointer.js';
+
+const joinUrlPath = posixPath.join;
 
 const debug = debuglog('procore-docs-to-openapi');
 
@@ -623,7 +628,7 @@ export default class ProcoreApiDocToOpenApiTransformer {
     }
 
     return {
-      path: basePath + path,
+      path: joinUrlPath(basePath, path),
       method,
       operation: {
         operationId: camelCase(summary),
