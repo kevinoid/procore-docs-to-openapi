@@ -5,7 +5,7 @@
  */
 
 import assert from 'assert';
-import camelCase from 'camelcase';
+import { camelCase } from 'camel-case';
 import escapeStringRegexp from 'escape-string-regexp';
 // TODO [engine:node@>=15.3]: import { join as joinUrlPath } from 'path/posix';
 // eslint-disable-next-line unicorn/import-style
