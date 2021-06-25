@@ -1,6 +1,7 @@
 /**
  * @copyright Copyright 2021 Kevin Locke <kevin@kevinlocke.name>
  * @license MIT
+ * @module "procore-docs-to-openapi/fixups.js"
  */
 
 import NullableToTypeNullTransformer
