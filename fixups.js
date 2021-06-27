@@ -4,6 +4,8 @@
  * @module "procore-docs-to-openapi/fixups.js"
  */
 
+import BoolEnumToBoolTransformer
+  from '@kevinoid/openapi-transformers/bool-enum-to-bool.js';
 import NullableToTypeNullTransformer
   from '@kevinoid/openapi-transformers/nullable-to-type-null.js';
 import OpenApiTransformerBase from 'openapi-transformer-base';
@@ -25,6 +27,7 @@ export default class ProcoreFixupsTransformer extends OpenApiTransformerBase {
     super();
     this.transformers = [
       new DocBugsTransformer(),
+      new BoolEnumToBoolTransformer(),
       new NullableToTypeNullTransformer(),
       new DateEnumTransformer(),
       new TimeMinMaxTransformer(),
