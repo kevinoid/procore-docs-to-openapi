@@ -8,6 +8,8 @@ import BoolEnumToBoolTransformer
   from '@kevinoid/openapi-transformers/bool-enum-to-bool.js';
 import NullableToTypeNullTransformer
   from '@kevinoid/openapi-transformers/nullable-to-type-null.js';
+import RemoveQueryFromPathsTransformer
+  from '@kevinoid/openapi-transformers/remove-query-from-paths.js';
 import OpenApiTransformerBase from 'openapi-transformer-base';
 
 import DateEnumTransformer from './lib/date-enum-transformer.js';
@@ -27,6 +29,7 @@ export default class ProcoreFixupsTransformer extends OpenApiTransformerBase {
     super();
     this.transformers = [
       new DocBugsTransformer(),
+      new RemoveQueryFromPathsTransformer(),
       new BoolEnumToBoolTransformer(),
       new NullableToTypeNullTransformer(),
       new DateEnumTransformer(),
