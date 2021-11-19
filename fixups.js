@@ -150,7 +150,7 @@ Implicit: https://developers.procore.com/documentation/oauth-implicit-flow`,
       ],
       ...openApi,
       components: {
-        ...openApi.components || {},
+        ...openApi.components,
         securitySchemes: {
           apiSecurity: securityScheme,
           // TODO [engine:node@>=15] .replaceAll()
