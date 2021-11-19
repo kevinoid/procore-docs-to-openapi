@@ -53,7 +53,7 @@
     "version-deps": "npm install conventional-changelog-cli david depcheck git-branch-is hub-ci-status"
   },
   "dependencies": {
-    "@kevinoid/openapi-transformers": "0.1.0",
+    "@kevinoid/openapi-transformers": "git+https://github.com/kevinoid/openapi-transformers.git#main",
     "camel-case": "^4.0.0",
     "commander": "^8.0.0",
     "escape-string-regexp": "^5.0.0",
