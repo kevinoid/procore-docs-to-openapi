@@ -5,8 +5,7 @@
  */
 
 import { Command } from 'commander';
-// TODO [engine:node@>=14]: import { readFile } from 'fs/promises'
-import { promises as fsPromises } from 'fs';
+import { readFile } from 'fs/promises';
 import { format } from 'util';
 
 import ProcoreFixupsTransformer from './fixups.js';
@@ -14,8 +13,6 @@ import ProcoreApiDocToOpenApiTransformer from './index.js';
 import combineOpenapi from './combine.js';
 import { procoreApiDocToOpenApiTransformerMockSymbol } from './lib/symbols.js';
 import toJsonPointer from './lib/to-json-pointer.js';
-
-const { readFile } = fsPromises;
 
 /** Option parser to count the number of occurrences of the option.
  *
