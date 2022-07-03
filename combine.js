@@ -4,7 +4,7 @@
  * @module procore-docs-to-openapi
  */
 
-import assert from 'assert';
+import assert from 'node:assert';
 
 /** Combines OpenAPI Objects created by {@see
  * ProcoreApiDocToOpenApiTransformer}.

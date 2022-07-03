@@ -5,8 +5,8 @@
  */
 
 import { Command } from 'commander';
-import { readFile } from 'fs/promises';
-import { format } from 'util';
+import { readFile } from 'node:fs/promises';
+import { format } from 'node:util';
 
 import ProcoreFixupsTransformer from './fixups.js';
 import ProcoreApiDocToOpenApiTransformer from './index.js';
