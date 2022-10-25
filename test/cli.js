@@ -10,9 +10,12 @@ import { PassThrough } from 'node:stream';
 import main from '../cli.js';
 import { procoreApiDocToOpenApiTransformerMockSymbol } from '../lib/symbols.js';
 
-const packageJsonPromise =
-  readFile(new URL('../package.json', import.meta.url), { encoding: 'utf8' })
-    .then(JSON.parse);
+// TODO[engine:node@>=16.15]: Import as JSON module
+// https://nodejs.org/api/esm.html#json-modules
+const packageJson = JSON.parse(await readFile(
+  new URL('../package.json', import.meta.url),
+  { encoding: 'utf8' },
+));
 
 const sharedArgs = ['node', 'modulename'];
 
@@ -131,7 +134,6 @@ Options:
 
   for (const verOption of ['-V', '--version']) {
     it(`writes version to stdout then exit 0 for ${verOption}`, async () => {
-      const packageJson = await packageJsonPromise;
       const options = getTestOptions();
       const code = await main([...sharedArgs, verOption], options);
       assert.strictEqual(code, 0);
