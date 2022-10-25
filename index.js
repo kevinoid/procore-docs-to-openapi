@@ -8,7 +8,6 @@ import assert from 'node:assert';
 import { camelCase } from 'camel-case';
 import escapeStringRegexp from 'escape-string-regexp';
 // TODO [engine:node@>=15.3]: import { join as joinUrlPath } from 'path/posix';
-// eslint-disable-next-line unicorn/import-style
 import { posix as posixPath } from 'node:path';
 import { debuglog, isDeepStrictEqual } from 'node:util';
 
