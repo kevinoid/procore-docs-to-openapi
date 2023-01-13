@@ -2,7 +2,7 @@ Convert Procore API Docs to OpenAPI
 ===================================
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/kevinoid/procore-docs-to-openapi/node.js.yml?branch=main&style=flat&label=build)](https://github.com/kevinoid/procore-docs-to-openapi/actions?query=branch%3Amain)
-[![Coverage](https://img.shields.io/codecov/c/github/kevinoid/procore-docs-to-openapi.svg?style=flat)](https://codecov.io/github/kevinoid/procore-docs-to-openapi?branch=main)
+[![Coverage](https://img.shields.io/codecov/c/github/kevinoid/procore-docs-to-openapi/main.svg?style=flat)](https://app.codecov.io/gh/kevinoid/procore-docs-to-openapi/branch/main)
 [![Dependency Status](https://img.shields.io/david/kevinoid/procore-docs-to-openapi.svg?style=flat)](https://david-dm.org/kevinoid/procore-docs-to-openapi)
 [![Supported Node Version](https://img.shields.io/node/v/@kevinoid/procore-docs-to-openapi.svg?style=flat)](https://www.npmjs.com/package/@kevinoid/procore-docs-to-openapi)
 [![Version on NPM](https://img.shields.io/npm/v/@kevinoid/procore-docs-to-openapi.svg?style=flat)](https://www.npmjs.com/package/@kevinoid/procore-docs-to-openapi)
