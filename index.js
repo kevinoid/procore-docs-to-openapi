@@ -7,14 +7,11 @@
 import assert from 'node:assert';
 import { camelCase } from 'camel-case';
 import escapeStringRegexp from 'escape-string-regexp';
-// TODO [engine:node@>=15.3]: import { join as joinUrlPath } from 'path/posix';
-import { posix as posixPath } from 'node:path';
+import { join as joinUrlPath } from 'node:path/posix';
 import { debuglog, isDeepStrictEqual } from 'node:util';
 
 import groupNameToUrlPath from './lib/group-name-to-url-path.js';
 import toJsonPointer from './lib/to-json-pointer.js';
-
-const joinUrlPath = posixPath.join;
 
 const debug = debuglog('procore-docs-to-openapi');
 

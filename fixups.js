@@ -153,14 +153,12 @@ Implicit: https://developers.procore.com/documentation/oauth-implicit-flow`,
         ...openApi.components,
         securitySchemes: {
           apiSecurity: securityScheme,
-          // TODO [engine:node@>=15] .replaceAll()
-          monthlySecurity: JSON.parse(securitySchemeJson.replace(
-            /https:\/\/login\.procore\.com/g,
+          monthlySecurity: JSON.parse(securitySchemeJson.replaceAll(
+            'https://login.procore.com',
             'https://login-sandbox-monthly.procore.com',
           )),
-          // TODO [engine:node@>=15] .replaceAll()
-          sandboxSecurity: JSON.parse(securitySchemeJson.replace(
-            /https:\/\/login\.procore\.com/g,
+          sandboxSecurity: JSON.parse(securitySchemeJson.replaceAll(
+            'https://login.procore.com',
             'https://login-sandbox.procore.com',
           )),
         },
