@@ -5,10 +5,11 @@
  */
 
 import assert from 'node:assert';
-import { camelCase } from 'camel-case';
-import escapeStringRegexp from 'escape-string-regexp';
 import { join as joinUrlPath } from 'node:path/posix';
 import { debuglog, isDeepStrictEqual } from 'node:util';
+
+import { camelCase } from 'camel-case';
+import escapeStringRegexp from 'escape-string-regexp';
 
 import groupNameToUrlPath from './lib/group-name-to-url-path.js';
 import toJsonPointer from './lib/to-json-pointer.js';

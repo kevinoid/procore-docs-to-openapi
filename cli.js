@@ -4,13 +4,14 @@
  * @module procore-docs-to-openapi/cli.js
  */
 
-import { Command } from 'commander';
 import { readFile } from 'node:fs/promises';
 import { format } from 'node:util';
 
+import { Command } from 'commander';
+
+import combineOpenapi from './combine.js';
 import ProcoreFixupsTransformer from './fixups.js';
 import ProcoreApiDocToOpenApiTransformer from './index.js';
-import combineOpenapi from './combine.js';
 import { procoreApiDocToOpenApiTransformerMockSymbol } from './lib/symbols.js';
 import toJsonPointer from './lib/to-json-pointer.js';
 
