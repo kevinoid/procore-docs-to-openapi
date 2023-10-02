@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@kevinoid/openapi-transformers": "git+https://github.com/kevinoid/openapi-transformers.git#main",
-    "camel-case": "^4.0.0",
+    "camel-case": "^5.0.0",
     "commander": "^11.0.0",
     "escape-string-regexp": "^5.0.0",
     "json-ptr": "^3.0.1",
