@@ -10,8 +10,13 @@ import { PassThrough } from 'node:stream';
 import main from '../cli.js';
 import { procoreApiDocToOpenApiTransformerMockSymbol } from '../lib/symbols.js';
 
-// TODO[engine:node@>=16.15]: Import as JSON module
+// TODO: Import as JSON module
+// Requires Node.js ^16.14 || >=17.5:
+// https://github.com/nodejs/node/pull/41736
 // https://nodejs.org/api/esm.html#json-modules
+// Won't be supported by ESLint until proposal reaches Stage 4:
+// https://github.com/eslint/eslint/issues/15623
+// https://github.com/tc39/proposal-import-attributes
 const packageJson = JSON.parse(await readFile(
   new URL('../package.json', import.meta.url),
   { encoding: 'utf8' },
