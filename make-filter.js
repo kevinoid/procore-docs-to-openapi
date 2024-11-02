@@ -18,7 +18,7 @@ export default function makeEndpointFilter(
   includeBetaPrograms,
 ) {
   const minIndex = supportLevels.indexOf(minSupportLevel);
-  if (minIndex < 0) {
+  if (minIndex === -1) {
     throw new RangeError(`Unrecognized minSupportLevel '${minSupportLevel}'`);
   }
 
@@ -42,7 +42,7 @@ export default function makeEndpointFilter(
     }
 
     const supportIndex = supportLevels.indexOf(supportLevel);
-    if (supportIndex < 0) {
+    if (supportIndex === -1) {
       this.warn('Unrecognized support_level:', supportLevel);
     }
 

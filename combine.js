@@ -58,7 +58,7 @@ export default function combineOpenapi(openapiDocs) {
     }
 
     for (const [pathStr, pathObj] of Object.entries(paths)) {
-      if (hasOwnProperty.call(combinedPaths, pathStr)) {
+      if (Object.hasOwn(combinedPaths, pathStr)) {
         throw new Error(`Duplicate path ${pathStr}`);
       }
 

@@ -38,7 +38,7 @@ function visit(transformer, method, propName, propValue) {
     return method.call(transformer, propValue);
   } catch (err) {
     handlingException = true;
-    if (!hasOwnProperty.call(err, 'transformPath')) {
+    if (!Object.hasOwn(err, 'transformPath')) {
       err.transformPath = [...transformer.transformPath];
       err.message +=
         ` (while transforming ${toJsonPointer(err.transformPath)})`;
@@ -318,7 +318,7 @@ export default class ProcoreApiDocToOpenApiTransformer {
             parentObjectSchema.properties = parentProperties;
           }
 
-          if (hasOwnProperty.call(parentProperties, name)) {
+          if (Object.hasOwn(parentProperties, name)) {
             throw new Error(`duplicate property ${name} for parameter`);
           }
 
@@ -347,7 +347,7 @@ export default class ProcoreApiDocToOpenApiTransformer {
             parentObjectSchema.patternProperties = patternProperties;
           }
 
-          if (hasOwnProperty.call(patternProperties, pattern)) {
+          if (Object.hasOwn(patternProperties, pattern)) {
             throw new Error(
               `duplicate patternProperty ${pattern} for parameter ${name}`,
             );
@@ -391,7 +391,7 @@ export default class ProcoreApiDocToOpenApiTransformer {
         );
       }
 
-      if (hasOwnProperty.call(propertiesByName, field)) {
+      if (Object.hasOwn(propertiesByName, field)) {
         throw new Error(
           `Duplicate field '${field}' in schema properties`,
         );
@@ -494,7 +494,7 @@ export default class ProcoreApiDocToOpenApiTransformer {
         this.warn('Invalid status:', status);
       }
 
-      if (hasOwnProperty.call(responseByStatus, status)) {
+      if (Object.hasOwn(responseByStatus, status)) {
         throw new Error(`Multiple responses for status ${status}`);
       }
 
