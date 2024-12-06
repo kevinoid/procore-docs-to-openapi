@@ -13,7 +13,7 @@
   "author": "Kevin Locke <kevin@kevinlocke.name>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kevinoid/procore-docs-to-openapi.git"
+    "url": "git+https://github.com/kevinoid/procore-docs-to-openapi.git"
   },
   "type": "module",
   "files": [
