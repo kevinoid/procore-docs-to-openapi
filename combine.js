@@ -6,14 +6,15 @@
 
 import assert from 'node:assert';
 
-/** Combines OpenAPI Objects created by {@see
- * ProcoreApiDocToOpenApiTransformer}.
+/** Combines OpenAPI Objects created by {@link
+ * module:procore-docs-to-openapi.ProcoreApiDocToOpenApiTransformer}.
  *
  * @param {!Array<!object>} openapiDocs Array of OpenAPI Objects produced
- * by {@see ProcoreApiDocToOpenApiTransformer}.
+ * by {@link module:procore-docs-to-openapi.ProcoreApiDocToOpenApiTransformer}.
  * @returns {!object} OpenAPI Object with all information from openapiDocs.
  * @throws {Error} If any object in openapiDocs contains properties not
- * produced by {@see ProcoreApiDocToOpenApiTransformer}.
+ * produced by {@link
+ * module:procore-docs-to-openapi.ProcoreApiDocToOpenApiTransformer}.
  * @throws {Error} If the same path appears in multiple objects in openapiDocs.
  */
 export default function combineOpenapi(openapiDocs) {
