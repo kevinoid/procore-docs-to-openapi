@@ -55,7 +55,7 @@ export default class ProcoreFixupsTransformer extends OpenApiTransformerBase {
 
     const securityScheme = {
       type: 'oauth2',
-      /* eslint-disable max-len */
+      /* eslint-disable @stylistic/max-len */
       description: `OAuth 2.0 Authentication.
 See: https://developers.procore.com/documentation/oauth-introduction
 
@@ -63,7 +63,7 @@ Documentation for Flows (i.e. Grant Types):\\
 Authorization Code: https://developers.procore.com/documentation/oauth-auth-grant-flow\\
 Client Credentials: https://developers.procore.com/documentation/oauth-client-credentials\\
 Implicit: https://developers.procore.com/documentation/oauth-implicit-flow`,
-      /* eslint-enable max-len */
+      /* eslint-enable @stylistic/max-len */
       flows: {
         authorizationCode: {
           authorizationUrl:
