@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "@kevinoid/openapi-transformers": "^0.1.0",
-    "camel-case": "^5.0.0",
+    "change-case": "^5.0.0",
     "commander": "^15.0.0",
     "escape-string-regexp": "^5.0.0",
     "json-ptr": "^3.0.1",

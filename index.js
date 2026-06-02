@@ -8,9 +8,7 @@ import assert from 'node:assert';
 import { join as joinUrlPath } from 'node:path/posix';
 import { debuglog, isDeepStrictEqual } from 'node:util';
 
-// https://github.com/import-js/eslint-plugin-import/issues/1810
-// eslint-disable-next-line import/no-unresolved
-import { camelCase } from 'camel-case';
+import { camelCase } from 'change-case';
 import escapeStringRegexp from 'escape-string-regexp';
 
 import groupNameToUrlPath from './lib/group-name-to-url-path.js';
