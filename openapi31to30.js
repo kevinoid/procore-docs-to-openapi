@@ -34,7 +34,6 @@ function hasAllPrimitiveTypes(type) {
 /**
  * Transforms an OpenAPI 3.1.* document for the Procore API to OpenAPI 3.0.3.
  */
-// eslint-disable-next-line import/no-unused-modules
 export default class ProcoreOpenApi31To30Transformer
   extends OpenApiTransformerBase {
   constructor() {
