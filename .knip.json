@@ -1,0 +1,16 @@
+{
+  "ignoreBinaries": [
+    // Ignore version binaries.  Install by running version-deps script.
+    "conventional-changelog",
+    "depcheck",
+    "david",
+    "git-branch-is",
+    "hub-ci-status"
+  ],
+  "ignoreFiles": [
+    // TODO: integrate this
+    "openapi31to30.js"
+  ],
+  "treatConfigHintsAsErrors": true,
+  "treatTagHintsAsErrors": true
+}
