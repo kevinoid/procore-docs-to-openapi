@@ -31,11 +31,11 @@ const openapiVersion = '3.1.0';
 function visit(transformer, method, propName, propValue) {
   transformer.transformPath.push(propName);
 
-  let handlingException = false;
+  let haveException = false;
   try {
     return method.call(transformer, propValue);
   } catch (err) {
-    handlingException = true;
+    haveException = true;
     if (!Object.hasOwn(err, 'transformPath')) {
       err.transformPath = [...transformer.transformPath];
       err.message +=
@@ -47,7 +47,7 @@ function visit(transformer, method, propName, propValue) {
     const popProp = transformer.transformPath.pop();
 
     // Avoid clobbering an exception which is already propagating
-    if (!handlingException) {
+    if (!haveException) {
       assert.strictEqual(popProp, propName);
     }
   }
