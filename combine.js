@@ -73,7 +73,7 @@ export default function combineOpenapi(openapiDocs) {
 
   return {
     openapi: firstVer,
-    tags: [...tagsByName.values()],
+    tags: tagsByName.values().toArray(),
     paths: combinedPaths,
   };
 }
