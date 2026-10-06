@@ -674,7 +674,7 @@ export default class ProcoreApiDocToOpenApiTransformer {
         const pathItem = paths[path];
         if (!pathItem) {
           paths[path] = { [method]: operation };
-        } else if (!pathItem[method]) {
+        } else if (!Object.hasOwn(pathItem, method)) {
           pathItem[method] = operation;
         } else {
           throw new Error(
