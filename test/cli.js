@@ -194,6 +194,8 @@ Options:
     const options = getTestOptions();
     options.stdin.end('{}');
     options[procoreApiDocToOpenApiTransformerMockSymbol] = class Bad {
+      transformPath;
+
       transformApiDoc(doc) {
         this.transformPath = [];
         this.warn('mytest');
@@ -213,6 +215,8 @@ Options:
     const options = getTestOptions();
     options.stdin.end('{}');
     options[procoreApiDocToOpenApiTransformerMockSymbol] = class Bad {
+      transformPath;
+
       transformApiDoc(doc) {
         this.transformPath = [];
         this.warn('mytest');
