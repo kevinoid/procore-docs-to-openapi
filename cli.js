@@ -185,6 +185,7 @@ export default async function procoreDocsToOpenapiMain(args, options) {
       if (verbosity >= 0) {
         transformer.warn = function(...values) {
           options.stderr.write(
+            // eslint-disable-next-line unicorn/no-this-outside-of-class
             `${filenames[i]}:${toJsonPointer(this.transformPath)}: ${
               format(...values)}\n`,
           );

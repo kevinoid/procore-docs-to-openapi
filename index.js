@@ -334,6 +334,7 @@ export default class ProcoreApiDocToOpenApiTransformer {
                 pattern += '(.*)';
               }
             } else {
+              // eslint-disable-next-line unicorn/prefer-regexp-escape
               pattern += escapeStringRegexp(variablePart);
             }
           }
