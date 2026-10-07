@@ -3,6 +3,10 @@
  * @license MIT
  */
 
+import { debuglog } from 'node:util';
+
+const debug = debuglog('procore-docs-to-openapi');
+
 /** Values of support_level which have been observed in Procore docs,
  * in order of increasing support.
  */
@@ -43,7 +47,7 @@ export default function makeEndpointFilter(
 
     const supportIndex = supportLevels.indexOf(supportLevel);
     if (supportIndex === -1) {
-      this.warn('Unrecognized support_level:', supportLevel);
+      debug('Unrecognized support_level:', supportLevel);
     }
 
     return supportIndex >= minIndex;
