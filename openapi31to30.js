@@ -21,7 +21,7 @@ import OpenApiTransformerBase from 'openapi-transformer-base';
  *
  * @private
  */
-function allPrimitiveTypes(type) {
+function hasAllPrimitiveTypes(type) {
   return Array.isArray(type)
     && type.length >= 3
     && [
@@ -40,7 +40,7 @@ export default class ProcoreOpenApi31To30Transformer
   constructor() {
     super();
     this.transformers = [
-      new RemoveTypeIfTransformer(allPrimitiveTypes),
+      new RemoveTypeIfTransformer(hasAllPrimitiveTypes),
       new OpenApi31To30Transformer(),
     ];
   }
