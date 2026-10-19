@@ -334,7 +334,6 @@ export default class ProcoreApiDocToOpenApiTransformer {
                 pattern += '(.*)';
               }
             } else {
-              // eslint-disable-next-line unicorn/prefer-regexp-escape
               pattern += escapeStringRegexp(variablePart);
             }
           }
@@ -522,7 +521,7 @@ export default class ProcoreApiDocToOpenApiTransformer {
       body_params: bodyParams,
       changelog,
       deprecated_at: deprecatedAt,
-      description,
+      description = '',
       group,
       internal_only: internalOnly,
       path,
@@ -576,7 +575,7 @@ export default class ProcoreApiDocToOpenApiTransformer {
     }
     combinedSummary += summary;
 
-    let combinedDescription = description || '';
+    let combinedDescription = description;
     if (betaPrograms && betaPrograms.length > 0) {
       combinedDescription += `\nPart of Beta Program: ${betaPrograms}`;
     }

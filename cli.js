@@ -22,8 +22,8 @@ import toJsonPointer from './lib/to-json-pointer.js';
  * @param {number=} previous Previous value of option (counter).
  * @returns {number} previous + 1.
  */
-function countOption(optarg, previous) {
-  return (previous || 0) + 1;
+function countOption(optarg, previous = 0) {
+  return previous + 1;
 }
 
 async function readJson(pathOrUrl, options) {
